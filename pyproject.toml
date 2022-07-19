@@ -25,6 +25,10 @@ version = "0.0.0"
 description = "Library for downloading and parsing counter data."
 authors = ["Beda Kosata <beda@bigdigdata.com>", "Stepan Henek <stepan@bigdigdata.com>"]
 license = "MIT"
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"Topic :: Software Development :: Libraries"
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
