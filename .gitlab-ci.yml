@@ -1,0 +1,7 @@
+stages:
+  - lints
+  - tests
+
+include:
+  - local: /.gitlab/pre-commit.yml
+  - local: /.gitlab/run-tests.yml

@@ -1,0 +1,31 @@
+default_stages: [push, commit]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '^.*\.(tsv|json|svg)'
+      - id: end-of-file-fixer
+        exclude: '^.*\.(tsv|json|svg)'
+      - id: check-yaml
+      - id: check-added-large-files
+
+  - repo: local
+    hooks:
+    - id: isort
+      name: "Python: isort formatter"
+      entry: poetry run isort -c
+      language: system
+      types: [python]
+
+    - id: black
+      name: "Python: Black formatter"
+      entry: poetry run black --check
+      language: system
+      types: [python]
+
+    - id: flake8
+      name: "Python: Flake8 linter"
+      entry: poetry run flake8
+      language: system
+      types: [python]

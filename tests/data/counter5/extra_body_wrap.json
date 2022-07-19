@@ -1,0 +1,375 @@
+{
+  "body": {
+    "Report_Header": {
+      "Created": "2018-01-01T00:00:00Z",
+      "Created_By": "My provider",
+      "Customer_ID": "hidden",
+      "Report_ID": "TR",
+      "Release": "5",
+      "Report_Name": "Title Master Report",
+      "Institution_Name": "Hidden",
+      "Institution_ID": [
+        {
+          "Type": "Proprietary",
+          "Value": "XXX:YYYYY"
+        }
+      ],
+      "Report_Filters": [
+        {
+          "Name": "Platform",
+          "Value": "My Platform"
+        },
+        {
+          "Name": "Begin_Date",
+          "Value": "2019-11-01"
+        },
+        {
+          "Name": "End_Date",
+          "Value": "2019-11-30"
+        },
+        {
+          "Name": "Access_Method",
+          "Value": "Regular"
+        },
+        {
+          "Name": "Data_Type",
+          "Value": "Book"
+        },
+        {
+          "Name": "Access_Type",
+          "Value": "Controlled"
+        }
+      ],
+      "Report_Attributes": [
+        {
+          "Name": "Attributes_To_Show",
+          "Value": "Access_Method|Data_Type|Access_Type|YOP"
+        }
+      ]
+    },
+    "Report_Items": [
+      {
+        "Title": null,
+        "Publisher": null,
+        "Value": "My Platform",
+        "Item_ID": [
+          {
+            "Type": "Proprietary",
+            "Value": "XXX:YYYYYYYY"
+          }
+        ],
+        "YOP": "0001",
+        "Access_Type": "Controlled",
+        "Access_Method": "Regular",
+        "Data_Type": "Book",
+        "Performance": [
+          {
+            "Period": {
+              "Begin_Date": "2019-11-01",
+              "End_Date": "2019-11-30"
+            },
+            "Instance": [
+              {
+                "Metric_Type": "No_License",
+                "Count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Title": "Title1",
+        "Publisher": "My Publisher",
+        "Platform": "My Platform",
+        "Item_ID": [
+          {
+            "Type": "Proprietary",
+            "Value": "XXX:YYYYYYY"
+          },
+          {
+            "Type": "ISBN",
+            "Value": "999-9-999999-99-9"
+          }
+        ],
+        "YOP": "2014",
+        "Access_Type": "Controlled",
+        "Access_Method": "Regular",
+        "Data_Type": "Book",
+        "Performance": [
+          {
+            "Period": {
+              "Begin_Date": "2019-11-01",
+              "End_Date": "2019-11-30"
+            },
+            "Instance": [
+              {
+                "Metric_Type": "Total_Item_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Item_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Total_Item_Requests",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Requests",
+                "Count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Title": "Title2",
+        "Publisher": "My Publisher",
+        "Platform": "My Platform",
+        "Item_ID": [
+          {
+            "Type": "Proprietary",
+            "Value": "XXX:YYYYYYY"
+          },
+          {
+            "Type": "ISBN",
+            "Value": "888-8-888-88888-8"
+          }
+        ],
+        "YOP": "2012",
+        "Access_Type": "Controlled",
+        "Access_Method": "Regular",
+        "Data_Type": "Book",
+        "Performance": [
+          {
+            "Period": {
+              "Begin_Date": "2019-11-01",
+              "End_Date": "2019-11-30"
+            },
+            "Instance": [
+              {
+                "Metric_Type": "Total_Item_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Item_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Total_Item_Requests",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Requests",
+                "Count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Title": "Title3",
+        "Publisher": "My Publisher",
+        "Platform": "My Platform",
+        "Item_ID": [
+          {
+            "Type": "Proprietary",
+            "Value": "YYY:XXXXXXX"
+          },
+          {
+            "Type": "ISBN",
+            "Value": "777-7-7777-7777-7"
+          }
+        ],
+        "YOP": "2012",
+        "Access_Type": "Controlled",
+        "Access_Method": "Regular",
+        "Data_Type": "Book",
+        "Performance": [
+          {
+            "Period": {
+              "Begin_Date": "2019-11-01",
+              "End_Date": "2019-11-30"
+            },
+            "Instance": [
+              {
+                "Metric_Type": "Unique_Item_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Investigations",
+                "Count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Title": "Title4",
+        "Publisher": "My Publisher",
+        "Platform": "My Platform",
+        "Item_ID": [
+          {
+            "Type": "Proprietary",
+            "Value": "XXX:YYYYYYY"
+          },
+          {
+            "Type": "ISBN",
+            "Value": "666-6-6666-6666-6"
+          }
+        ],
+        "YOP": "2000",
+        "Access_Type": "Controlled",
+        "Access_Method": "Regular",
+        "Data_Type": "Book",
+        "Performance": [
+          {
+            "Period": {
+              "Begin_Date": "2019-11-01",
+              "End_Date": "2019-11-30"
+            },
+            "Instance": [
+              {
+                "Metric_Type": "Total_Item_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Item_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Investigations",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Total_Item_Requests",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Item_Requests",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Requests",
+                "Count": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Title": "Title5",
+        "Publisher": "My Publisher",
+        "Platform": "My Platform",
+        "Item_ID": [
+          {
+            "Type": "Proprietary",
+            "Value": "UUU:FFFFFFF"
+          },
+          {
+            "Type": "ISBN",
+            "Value": "555-5-5555-5555-5"
+          }
+        ],
+        "YOP": "2012",
+        "Access_Type": "Controlled",
+        "Access_Method": "Regular",
+        "Data_Type": "Book",
+        "Performance": [
+          {
+            "Period": {
+              "Begin_Date": "2019-11-01",
+              "End_Date": "2019-11-30"
+            },
+            "Instance": [
+              {
+                "Metric_Type": "Total_Item_Investigations",
+                "Count": 4
+              },
+              {
+                "Metric_Type": "Unique_Item_Investigations",
+                "Count": 3
+              },
+              {
+                "Metric_Type": "Unique_Title_Investigations",
+                "Count": 3
+              },
+              {
+                "Metric_Type": "Total_Item_Requests",
+                "Count": 4
+              },
+              {
+                "Metric_Type": "Unique_Title_Requests",
+                "Count": 3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Title": "Title6",
+        "Publisher": "My Publisher",
+        "Platform": "My Platform",
+        "Item_ID": [
+          {
+            "Type": "Proprietary",
+            "Value": "TTT:CCCCCCC"
+          },
+          {
+            "Type": "ISBN",
+            "Value": "555-5-55555-555-5"
+          }
+        ],
+        "YOP": "2012",
+        "Access_Type": "Controlled",
+        "Access_Method": "Regular",
+        "Data_Type": "Book",
+        "Performance": [
+          {
+            "Period": {
+              "Begin_Date": "2019-11-01",
+              "End_Date": "2019-11-30"
+            },
+            "Instance": [
+              {
+                "Metric_Type": "Total_Item_Investigations",
+                "Count": 3
+              },
+              {
+                "Metric_Type": "Unique_Item_Investigations",
+                "Count": 3
+              },
+              {
+                "Metric_Type": "Unique_Title_Investigations",
+                "Count": 3
+              },
+              {
+                "Metric_Type": "Total_Item_Requests",
+                "Count": 3
+              },
+              {
+                "Metric_Type": "Unique_Item_Requests",
+                "Count": 1
+              },
+              {
+                "Metric_Type": "Unique_Title_Requests",
+                "Count": 3
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "response": {
+    "status": 200
+  }
+}

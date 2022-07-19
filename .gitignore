@@ -1,0 +1,12 @@
+__pycache__
+.idea/
+*~
+.cache
+.coverage
+/.pytest_cache
+.~*
+/.env
+/venv
+error.log
+.DS_Store
+poetry.lock
