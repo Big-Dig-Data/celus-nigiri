@@ -3,6 +3,8 @@ import datetime
 import re
 from typing import Optional
 
+import dateparser
+
 counter_month_matcher = re.compile(r'^(?P<month>\w{3})-(?P<year>\d{2}(\d{2})?)$')
 
 
@@ -30,3 +32,14 @@ def parse_counter_month(text: str) -> Optional[datetime.date]:
             return datetime.date(year, month_abbrs.index(month), 1)
         except ValueError:
             return None
+
+
+def parse_date_fuzzy(date_str: str) -> Optional[datetime.date]:
+    """
+    Uses dateparser to try to parse a date. Uses only specific locales to make dateparser
+    faster, so we extracted it as a function to use throughout the code
+    """
+    dt = dateparser.parse(date_str, languages=['en'])
+    if not dt:
+        return dt
+    return dt.date()

@@ -1,6 +1,6 @@
 # Celus - Nigiri
 
-Library for downloading and parsing counter data.
+Library for downloading and parsing counter-like data.
 
 
 # License
