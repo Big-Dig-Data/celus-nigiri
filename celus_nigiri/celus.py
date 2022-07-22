@@ -10,7 +10,6 @@ DEFAULT_COLUMN_MAP = {
     'Metric': 'metric',
     'Organization': 'organization',
     'Source': 'title',
-    'Platform': 'platform_name',
     'Title': 'title',
 }
 
