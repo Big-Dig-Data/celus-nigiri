@@ -4,45 +4,13 @@ Module dealing with data in the COUNTER5 format.
 import csv
 import json
 import typing
-from copy import copy
 
 import ijson.backends.yajl2_c as ijson
 
 from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
+from .record import CounterRecord
 from .utils import parse_counter_month
-
-
-# TODO we can try to use  data classes https://docs.python.org/3/library/dataclasses.html
-# but newer version o python >= 3.7 is required here
-class CounterRecord:
-    __slots__ = ("start", "end", "title", "title_ids", "dimension_data", "metric", "value")
-
-    def __init__(
-        self,
-        start=None,
-        end=None,
-        title=None,
-        title_ids=None,
-        metric=None,
-        value=None,
-        dimension_data=None,
-    ):
-        self.start = start
-        self.end = end
-        self.title = title
-        # by using a dict below, we do not allow more than one proprietary ID
-        # this should be OK, but in most of the code below, we allow more than one prop. ID
-        # In case we wanted to actually support it, we would need to change this code
-        self.title_ids = title_ids if title_ids else {}
-        self.dimension_data = dimension_data if dimension_data is not None else {}
-        self.metric = metric
-        self.value = value
-
-    @classmethod
-    def empty_generator(cls) -> typing.Generator['CounterRecord', None, None]:
-        empty: typing.List['CounterRecord'] = []
-        return (e for e in empty)
 
 
 class CounterError:
@@ -157,20 +125,27 @@ class Counter5ReportBase:
 
         for item in items:
             self.check_item(item)
-            record = CounterRecord()
-            record.title = self._item_get_title(item)
-            record.title_ids = self._extract_title_ids(item.get('Item_ID', []) or [])
-            record.dimension_data = self._extract_dimension_data(self.dimensions, item)
+
+            title = self._item_get_title(item)
+            title_ids = self._extract_title_ids(item.get('Item_ID', []) or [])
+            dimension_data = self._extract_dimension_data(self.dimensions, item)
+
             performances = item.get('Performance')
             for performance in performances:
                 period = performance.get('Period', {})
-                record.start = period.get('Begin_Date')
-                record.end = period.get('End_Date')
+                start = period.get('Begin_Date')
+                end = period.get('End_Date')
+
                 for metric in performance.get('Instance', []):
-                    this_rec = copy(record)
-                    this_rec.metric = metric.get('Metric_Type')
-                    this_rec.value = int(metric.get('Count'))
-                    yield this_rec
+                    yield CounterRecord(
+                        value=int(metric.get('Count')),
+                        metric=metric.get('Metric_Type'),
+                        start=start,
+                        end=end,
+                        title=title,
+                        title_ids=title_ids,
+                        dimension_data=dimension_data,
+                    )
 
     def check_header(self, header, fd):
         lower_keys = [e.lower() for e in header]
