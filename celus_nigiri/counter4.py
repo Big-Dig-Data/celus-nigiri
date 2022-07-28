@@ -44,15 +44,18 @@ class Counter4ReportBase:
 
     def _read_report(self, report: CounterReport) -> typing.Generator[CounterRecord, None, None]:
         for journal in report:  # type: CounterEresource
+            title = self._extract_title(journal)
+            title_ids = self._extract_title_ids(journal)
+            dimension_data = self._extract_dimension_data(self.dimensions, journal)
             for start, metric, value in journal:
-                record = CounterRecord()
-                record.title = self._extract_title(journal)
-                record.title_ids = self._extract_title_ids(journal)
-                record.dimension_data = self._extract_dimension_data(self.dimensions, journal)
-                record.start = start
-                record.metric = metric
-                record.value = value
-                yield record
+                yield CounterRecord(
+                    start=start,
+                    metric=metric,
+                    title=title,
+                    title_ids=title_ids,
+                    dimension_data=dimension_data,
+                    value=value,
+                )
 
     def file_to_records(self, filename: str) -> typing.Generator[CounterRecord, None, None]:
         data = self.file_to_input(filename)

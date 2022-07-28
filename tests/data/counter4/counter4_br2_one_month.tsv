@@ -1,0 +1,14 @@
+"Book Report 2 (R4)"	"Number of Successful Section Requests by Month and Title"							
+"ANONYMOUS"	"Section Type:"							
+"ANONYMOUS"								
+"Period covered by Report:"								
+"2018-02-01 to 2018-02-28"								
+"Date run:"								
+"2019-08-02"								
+	"Publisher"	"Platform"	"Book DOI"	"Proprietary Identifier"	"ISBN"	"ISSN"	"Reporting Period Total"	"Feb-2018"
+"Total for all titles"		"My Platform"					12	12
+"Title1"	"Publisher1"	"My Platform"		111111	"111-1-1111-1111-1"		0	0
+"Title2"	"Publisher2"	"My Platform"		222222	"222-2-2222-2222-2"		10	10
+"Title3"		"My Platform"					0	0
+"Title4"	"Publisher3"	"My Platform"		333333	"333-333-33333-3-3"		1	1
+"Title5"	"Publisher3"	"My Platform"		444444	"444-444-44444-4-4"		1	1
