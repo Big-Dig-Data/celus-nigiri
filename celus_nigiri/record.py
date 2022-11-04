@@ -35,10 +35,10 @@ class CounterRecord:
                 return ""
             return "|".join(f"{k}:{mapping[k]}" for k in sorted(mapping.keys()))
 
-        def format_date(dato_obj: typing.Optional[date]):
-            if not dato_obj:
+        def format_date(date_obj: typing.Optional[date]):
+            if not date_obj:
                 return ""
-            return dato_obj.strftime("%Y-%m-%d")
+            return date_obj.strftime("%Y-%m-%d")
 
         return (
             format_date(self.start),

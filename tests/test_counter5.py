@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -19,8 +20,8 @@ class TestCounter5Reading:
         assert records[0].title == 'Title1'
         assert records[0].metric == 'Total_Item_Investigations'
         assert records[0].value == 10
-        assert records[0].start == '2019-05-01'
-        assert records[0].end == '2019-05-31'
+        assert records[0].start == date(2019, 5, 1)
+        assert records[0].end == date(2019, 5, 31)
         assert records[0].value == 10
         assert records[0].dimension_data == {
             'Access_Type': 'OA_Gold',

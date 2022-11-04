@@ -10,7 +10,7 @@ import ijson.backends.yajl2_c as ijson
 from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .record import CounterRecord
-from .utils import parse_counter_month
+from .utils import parse_counter_month, parse_date_fuzzy
 
 
 class CounterError:
@@ -133,8 +133,8 @@ class Counter5ReportBase:
             performances = item.get('Performance')
             for performance in performances:
                 period = performance.get('Period', {})
-                start = period.get('Begin_Date')
-                end = period.get('End_Date')
+                start = parse_date_fuzzy(period.get('Begin_Date'))
+                end = parse_date_fuzzy(period.get('End_Date'))
 
                 for metric in performance.get('Instance', []):
                     yield CounterRecord(
