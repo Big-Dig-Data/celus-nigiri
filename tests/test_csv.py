@@ -18,5 +18,5 @@ def test_dialect(path, encoding, dialect):
     with path.open("rb") as f:
         detected_encoding = detect_file_encoding(f)
         assert detected_encoding == encoding
-    with path.open("r") as f:
-        assert detect_csv_dialect(f, detected_encoding) == dialect
+    with path.open("r", encoding=detected_encoding) as f:
+        assert detect_csv_dialect(f) == dialect

@@ -7,6 +7,7 @@ import typing
 
 import ijson.backends.yajl2_c as ijson
 
+from .csv_detect import detect_csv_dialect, detect_file_encoding
 from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .record import CounterRecord
@@ -406,8 +407,15 @@ class Counter5TableReport:
     ignored_columns = ['Reporting_Period_Total', 'Publisher_ID', 'Linking_ISSN']
 
     def file_to_records(self, filename: str) -> typing.Generator[CounterRecord, None, None]:
-        with open(filename, 'r') as infile:
-            for rec in self._fd_to_records(infile):
+        # detect encoding
+        with open(filename, 'rb') as f:
+            encoding = detect_file_encoding(f)
+
+        with open(filename, 'r', encoding=encoding) as infile:
+            # detect dialect
+            dialect = detect_csv_dialect(infile)
+
+            for rec in self._fd_to_records(infile, dialect):
                 yield rec
 
     def check_title_ids(self, report_type: str, title_ids: typing.Dict[str, str]):
@@ -415,10 +423,7 @@ class Counter5TableReport:
         if extra:
             raise ValueError("Unsupported IDs ({extra}) for report_type {report_type}")
 
-    def _fd_to_records(self, infile) -> typing.Generator[CounterRecord, None, None]:
-        # guess TSV or CSV and other csv stuff (e.g. how strings are escaped)
-        dialect = csv.Sniffer().sniff(infile.read(10 * 1024 * 1024))  # first 10MB
-        infile.seek(0)
+    def _fd_to_records(self, infile, dialect) -> typing.Generator[CounterRecord, None, None]:
 
         # read the header
         header = {}

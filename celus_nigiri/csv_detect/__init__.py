@@ -42,14 +42,12 @@ def detect_file_encoding(
     return encoding
 
 
-def detect_csv_dialect(
-    file: typing.IO[str], encoding: str = DEFAULT_ENCODING, max_lines: typing.Optional[int] = 200
-) -> str:
+def detect_csv_dialect(file: typing.IO[str], max_lines: typing.Optional[int] = 200) -> str:
     """Detect which csv dialect is most appropriate for counter-like data"""
     histograms = []
 
     for dialect in csv.list_dialects():
-        histogram = csv_line_length_histogram(file, dialect, encoding, max_lines)
+        histogram = csv_line_length_histogram(file, dialect, max_lines)
         histograms.append((histogram, dialect))
 
     scores = sorted(histograms, key=lambda x: histogram_score(x[0]), reverse=True)
@@ -70,10 +68,7 @@ def histogram_score(histogram: typing.Counter[int]) -> int:
 
 
 def csv_line_length_histogram(
-    file: typing.IO[str],
-    dialect: csv.Dialect,
-    encoding: str = DEFAULT_ENCODING,
-    max_lines: typing.Optional[int] = 200,
+    file: typing.IO[str], dialect: csv.Dialect, max_lines: typing.Optional[int] = 200
 ) -> typing.Counter[int]:
 
     orig_file_pos = file.tell()
