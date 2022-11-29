@@ -1,5 +1,6 @@
 """ Celus format for non-counter data """
 import typing
+import warnings
 from datetime import date
 from functools import lru_cache
 
@@ -33,6 +34,11 @@ def col_name_to_month(row_name: str) -> typing.Optional[date]:
 def custom_data_to_records(
     records: typing.Generator[dict, None, None], column_map=None, extra_dims=None, initial_data=None
 ) -> typing.Generator[CounterRecord, None, None]:
+    warnings.warn(
+        "This function is deprecated please use celus-nibbler to parse celus format",
+        DeprecationWarning,
+    )
+
     # prepare the keyword arguments
     if initial_data is None:
         initial_data = {}
