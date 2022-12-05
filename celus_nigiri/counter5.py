@@ -121,9 +121,6 @@ class Counter5ReportBase:
         """
         Reads in the report as returned by the API using Sushi5Client
         """
-
-        self.header = header
-
         for item in items:
             self.check_item(item)
 
@@ -285,8 +282,8 @@ class Counter5ReportBase:
 
     def file_to_records(self, filename: str) -> typing.Generator[CounterRecord, None, None]:
         f = open(filename, 'rb')  # file will be closed later (once generator struct is discarded)
-        header, items = self.fd_to_dicts(f)
-        return self.read_report(header, items)
+        self.header, items = self.fd_to_dicts(f)
+        return self.read_report(self.header, items)
 
     @classmethod
     def file_to_input(cls, filename: str):
