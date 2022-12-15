@@ -13,13 +13,13 @@ def main():
             encoding = detect_file_encoding(f)
 
         try:
-            with path.open("r") as f:
-                dialect = detect_csv_dialect(f, encoding)
-                histogram = csv_line_length_histogram(f, dialect, encoding)
+            with path.open("r", encoding=encoding) as f:
+                dialect = detect_csv_dialect(f)
+                histogram = csv_line_length_histogram(f, dialect)
         except UnicodeDecodeError as e:
             print(f"{path} {e}")
         else:
-            print(f"{path}: {dialect} - {histogram}")
+            print(f"{path}: {dialect}|{encoding} - {histogram}")
 
 
 if __name__ == "__main__":
