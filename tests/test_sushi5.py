@@ -2,12 +2,10 @@ import re
 from io import BytesIO
 from pathlib import Path
 
-import pytest
 import requests_mock
 
 from celus_nigiri.client import Sushi5Client
-from celus_nigiri.counter5 import TransportError, CounterError
-from celus_nigiri.exceptions import SushiException
+from celus_nigiri.counter5 import CounterError, TransportError
 
 
 class TestSushi5:
