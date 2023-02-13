@@ -277,7 +277,7 @@ class Sushi5Client(SushiClientBase):
         response = self.fetch_report_data(
             report_type, begin_date, end_date, params=params, dump_file=output_content
         )
-        if 200 <= response.status_code < 300 or 400 <= response.status_code < 500:
+        if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
             # status codes in the 4xx range may be OK and just provide additional signal
             # about an issue - we need to parse the result in case there is more info
             # in the body
@@ -299,7 +299,7 @@ class Sushi5Client(SushiClientBase):
             if output_content:
                 output_content.seek(0)
             return report_class(output_content, http_status_code=response.status_code)
-        # response code most probably 5xx - we raise an error
+        # for other response codes we raise an error - it should be only exotic ones
         response.raise_for_status()
 
     def report_to_data(self, report: bytes, validate=True) -> typing.Generator[dict, None, None]:
