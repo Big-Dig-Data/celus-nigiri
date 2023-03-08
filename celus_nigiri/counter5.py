@@ -418,7 +418,7 @@ class Counter5TableReport:
     def check_title_ids(self, report_type: str, title_ids: typing.Dict[str, str]):
         extra = set(title_ids.keys()) - set(ALLOWED_ITEM_IDS[report_type])
         if extra:
-            raise ValueError("Unsupported IDs ({extra}) for report_type {report_type}")
+            raise ValueError(f"Unsupported IDs ({extra}) for report_type {report_type}")
 
     def _fd_to_records(self, infile, dialect) -> typing.Generator[CounterRecord, None, None]:
 
