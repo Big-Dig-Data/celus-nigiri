@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from celus_nigiri import CounterRecord
-from celus_nigiri.celus import custom_data_to_records
+from celus_nigiri.celus import custom_data_to_records, get_months
 
 
 def test_custom_data_to_records_1():
@@ -405,3 +405,31 @@ def test_file_parsing(filename, output):
         records = list(custom_data_to_records(reader))
 
     assert records == output
+
+
+@pytest.mark.parametrize(
+    ['filename', 'months'],
+    [
+        (
+            'custom_data-2d-3x2x3-isodate.csv',
+            [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
+        ),
+        ('custom_data-2d-3x2x3-endate.csv', [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)]),
+        (
+            'custom_data-2d-3x2x3-org-isodate.csv',
+            [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
+        ),
+        (
+            'custom_data-simple-3x3-isodate.csv',
+            [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
+        ),
+        (
+            'custom_data-simple-3x3-endate.csv',
+            [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
+        ),
+    ],
+)
+def test_file_months(filename, months):
+    path = Path(__file__).parent / 'data/custom' / filename
+    with path.open() as f:
+        assert get_months(f) == months

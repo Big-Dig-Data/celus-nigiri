@@ -1,7 +1,7 @@
 import calendar
 import datetime
 import re
-from typing import Optional
+from typing import List, Optional
 
 import dateparser
 
@@ -43,3 +43,13 @@ def parse_date_fuzzy(date_str: str) -> Optional[datetime.date]:
     if not dt:
         return dt
     return dt.date()
+
+
+def get_date_range(start_date: datetime.date, end_date: datetime.date) -> List[datetime.date]:
+    months = []
+    while start_date <= end_date:
+        start_date = start_date.replace(day=1)
+        months.append(start_date)
+        start_date = start_date + datetime.timedelta(days=45)
+
+    return months

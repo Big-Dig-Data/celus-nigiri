@@ -1,4 +1,5 @@
 """ Celus format for non-counter data """
+import csv
 import typing
 import warnings
 from datetime import date
@@ -78,3 +79,24 @@ def custom_data_to_records(
                 )
             )
     return (e for e in result)  # TODO convert this into a propper generator
+
+
+def get_months(
+    file: typing.IO,
+    seek_fun: typing.Optional[typing.Callable[[csv.reader], None]] = None,
+    dialect=None,
+) -> typing.List[date]:
+    """Get months from file in celus csv format"""
+    pos = file.tell()
+    reader = csv.reader(file, dialect=dialect)
+    if seek_fun:
+        seek_fun(reader)
+    header = next(reader)
+
+    res = []
+    for cell in header:
+        if date := col_name_to_month(cell.strip()):
+            res.append(date)
+
+    file.seek(pos)
+    return res

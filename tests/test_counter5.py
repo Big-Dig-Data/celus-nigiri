@@ -4,18 +4,15 @@ from pathlib import Path
 import pytest
 
 from celus_nigiri.counter5 import Counter5DRReport, Counter5TableReport, Counter5TRReport
+from celus_nigiri.csv_detect import detect_csv_dialect
 from celus_nigiri.exceptions import SushiException
 
 
 class TestCounter5Reading:
     def test_record_simple_tr(self):
         reader = Counter5TRReport()
-        records = [
-            e
-            for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/data_simple.json'
-            )
-        ]
+        path = Path(__file__).parent / 'data/counter5/data_simple.json'
+        records = [e for e in reader.file_to_records(path)]
         assert len(records) == 2
         assert records[0].title == 'Title1'
         assert records[0].metric == 'Total_Item_Investigations'
@@ -37,6 +34,9 @@ class TestCounter5Reading:
             assert getattr(records[0], attr) == getattr(records[1], attr)
         assert records[1].value == 8
 
+        with path.open("rb") as f:
+            assert reader.get_months(f) == []
+
     def test_reading_incorrect_data(self):
         """
         Test that data that do not have the proper format are not imported and raise an error
@@ -57,13 +57,11 @@ class TestCounter5Reading:
         Check that we can properly parse this type of data.
         """
         reader = Counter5TRReport()
-        records = [
-            e
-            for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/extra_body_wrap.json'
-            )
-        ]
+        path = Path(__file__).parent / 'data/counter5/extra_body_wrap.json'
+        records = [e for e in reader.file_to_records(path)]
         assert len(records) == 30  # 7 titles, metrics - 1, 5, 5, 2, 6, 5, 6
+        with path.open("rb") as f:
+            assert reader.get_months(f) == [date(2019, 11, 1)]
 
     def test_reading_wrapped_in_body_exception(self):
         """
@@ -103,13 +101,15 @@ class TestCounter5Reading:
         """
         There is no exception in the header, but also no data (no data found for such period)
         """
+        path = Path(__file__).parent / 'data/counter5/no_data.json'
         reader = Counter5TRReport()
-        records = [
-            e for e in reader.file_to_records(Path(__file__).parent / 'data/counter5/no_data.json')
-        ]
+        records = [e for e in reader.file_to_records(path)]
         assert len(records) == 0
         assert len(reader.warnings) == 0
         assert not reader.queued
+
+        with path.open("rb") as f:
+            assert reader.get_months(f) == [date(2018, 11, 1), date(2018, 12, 1)]
 
     def test_reading_messed_up_data_error_directly_in_data(self):
         """
@@ -222,21 +222,63 @@ class TestCounter5TableReports:
         assert records[-1].value == 1
 
     @pytest.mark.parametrize(
-        ['rt', 'count', 'first_number'], [('PR', 42, 10), ('TR', 24, 100), ('DR', 30, 1)]
+        ['rt', 'count', 'first_number', 'months'],
+        [
+            (
+                'PR',
+                42,
+                10,
+                [
+                    date(2017, 1, 1),
+                    date(2017, 2, 1),
+                    date(2017, 3, 1),
+                    date(2017, 4, 1),
+                    date(2017, 5, 1),
+                    date(2017, 6, 1),
+                ],
+            ),
+            (
+                'TR',
+                24,
+                100,
+                [
+                    date(2017, 1, 1),
+                    date(2017, 2, 1),
+                    date(2017, 3, 1),
+                    date(2017, 4, 1),
+                    date(2017, 5, 1),
+                    date(2017, 6, 1),
+                ],
+            ),
+            (
+                'DR',
+                30,
+                1,
+                [
+                    date(2017, 1, 1),
+                    date(2017, 2, 1),
+                    date(2017, 3, 1),
+                    date(2017, 4, 1),
+                    date(2017, 5, 1),
+                    date(2017, 6, 1),
+                ],
+            ),
+        ],
     )
-    def test_official_example(self, rt, count, first_number):
+    def test_official_example(self, rt, count, first_number, months):
         """
         Takes slightly modified version of the official example reports from COUNTER and tries
         to read them.
         """
+        path = Path(__file__).parent / f'data/counter5/COUNTER_R5_Report_Examples_{rt}.csv'
         reader = Counter5TableReport()
-        records = list(
-            reader.file_to_records(
-                Path(__file__).parent / f'data/counter5/COUNTER_R5_Report_Examples_{rt}.csv'
-            )
-        )
+
+        records = list(reader.file_to_records(path))
         assert len(records) == count
         assert records[0].value == first_number
+
+        with path.open("r") as f:
+            assert reader.get_months(f, detect_csv_dialect(f)) == months
 
     def test_mismatched_report_types(self):
         reader = Counter5TableReport()

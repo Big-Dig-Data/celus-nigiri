@@ -4,14 +4,16 @@ Module dealing with data in the COUNTER5 format.
 import csv
 import json
 import typing
+from datetime import date
 
 import ijson.backends.yajl2_c as ijson
 
+from .celus import get_months as celus_format_get_months
 from .csv_detect import detect_csv_dialect, detect_file_encoding
 from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .record import CounterRecord
-from .utils import parse_counter_month, parse_date_fuzzy
+from .utils import get_date_range, parse_counter_month, parse_date_fuzzy
 
 
 class CounterError:
@@ -279,6 +281,29 @@ class Counter5ReportBase:
 
         return header, items
 
+    def get_months(self, fd: typing.IO[bytes]) -> typing.List[date]:
+        pos = fd.tell()
+
+        header, _ = self.fd_to_dicts(fd)
+
+        # Try to obtain End_Date and Begin_Date from report filter
+        date_start_str = None
+        date_end_str = None
+        for e in header.get("Report_Filters", []):
+            if e.get("Name") == "Begin_Date":
+                date_start_str = e.get("Value")
+            elif e.get("Name") == "End_Date":
+                date_end_str = e.get("Value")
+
+        fd.seek(pos)
+
+        date_start = parse_date_fuzzy(date_start_str or "")
+        date_end = parse_date_fuzzy(date_end_str or "")
+        if date_start and date_end:
+            return get_date_range(date_start, date_end)
+        else:
+            return []
+
     def file_to_records(self, filename: str) -> typing.Generator[CounterRecord, None, None]:
         f = open(filename, 'rb')  # file will be closed later (once generator struct is discarded)
         self.header, items = self.fd_to_dicts(f)
@@ -415,15 +440,20 @@ class Counter5TableReport:
         if extra:
             raise ValueError(f"Unsupported IDs ({extra}) for report_type {report_type}")
 
-    def _fd_to_records(self, infile, dialect) -> typing.Generator[CounterRecord, None, None]:
-        # read the header
+    def get_header(self, reader: csv.reader):
         header = {}
-        reader = csv.reader(infile, dialect=dialect)
         for header_line in reader:
             if not header_line or not header_line[0].strip():
                 # we break on empty line - it means end of header and start of data
                 break
             header[header_line[0].strip()] = header_line[1].strip() if len(header_line) > 1 else ''
+        return header
+
+    def _fd_to_records(self, infile, dialect) -> typing.Generator[CounterRecord, None, None]:
+        # read the header
+        reader = csv.reader(infile, dialect=dialect)
+        header = self.get_header(reader)
+
         report_type = header.get('Report_ID')
         if not report_type or report_type not in self.report_type_to_dimensions:
             raise ValueError(f'Unsupported report type: {report_type}')
@@ -474,3 +504,6 @@ class Counter5TableReport:
                     title_ids=title_ids,
                     **implicit_dimensions,
                 )
+
+    def get_months(self, fd: typing.IO[bytes], dialect) -> typing.List[date]:
+        return celus_format_get_months(fd, self.get_header, dialect)
