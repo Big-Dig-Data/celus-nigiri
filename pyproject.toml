@@ -36,7 +36,7 @@ python = "^3.8"
 dateparser = "~1.1.1"
 chardet = "^5.0.0"
 ijson = "~3.1.4"
-pycounter = {git = "https://github.com/beda42/pycounter.git", rev = "7d3b8470d909e3a9c989492c01fd8d40b89248cd"}
+pycounter = {git = "https://github.com/beda42/pycounter.git", rev = "11ff555d814065f51fb780fa6bf6386446c7f1de"}
 python-decouple = "^3.6"
 xmltodict = "~0.13.0"
 
