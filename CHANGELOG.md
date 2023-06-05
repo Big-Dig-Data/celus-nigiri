@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.3.1] - 2023-06-05
+
+### Changed
+- pycounter was bumped to newer version in order to process time when the harvest was run more properly
+
+### Fixed
+- formatting of an error message was fixed
+
+
 ## [1.3.0] - 2023-02-16
 
 ### Fixed
