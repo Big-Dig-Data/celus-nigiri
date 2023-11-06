@@ -1,0 +1,137 @@
+{
+   "Report_Header" : {
+      "Created" : "2023-11-06T09:42:23+01:00",
+      "Created_By" : "vahlen - eLibrary",
+      "Customer_ID" : "11111",
+      "Institution_ID" : [
+         {
+            "Type" : "Proprietary",
+            "Value" : "foobar"
+         }
+      ],
+      "Institution_Name" : "Test Institution",
+      "Release" : "5",
+      "Report_Attributes" : [
+         {
+            "Name" : "Attributes_To_Show",
+            "Value" : "YOP|Access_Method|Access_Type|Data_Type|Section_Type"
+         }
+      ],
+      "Report_Filters" : [
+         {
+            "Name" : "Begin_Date",
+            "Value" : "2023-07-01"
+         },
+         {
+            "Name" : "End_Date",
+            "Value" : "2023-07-31"
+         }
+      ],
+      "Report_ID" : "TR",
+      "Report_Name" : "Title Master Report"
+   },
+   "Report_Items" : [
+      {
+         "Access_Method" : "Regular",
+         "Access_Type" : "Controlled",
+         "Data_Type" : "Journal",
+         "Item_ID" : [
+            {
+               "Type" : "DOI",
+               "Value" : "10.15358/0340-1650"
+            },
+            {
+               "Type" : "Proprietary",
+               "Value" : "vahelib:0340-1650"
+            },
+            {
+               "Type" : "Print_ISSN",
+               "Value" : "0340-1650"
+            },
+            {
+               "Type" : "Online_ISSN",
+               "Value" : "0340-1650"
+            },
+            {
+               "Type" : "URI",
+               "Value" : "https://www.beck-elibrary.de/10.15358/0340-1650"
+            }
+         ],
+         "Performance" : [
+            {
+               "Instance" : [
+                  {
+                     "Count" : 1,
+                     "Metric_Type" : "Total_Item_Investigations"
+                  },
+                  {
+                     "Count" : 1,
+                     "Metric_Type" : "Unique_Item_Investigations"
+                  },
+                  {
+                     "Count" : 1,
+                     "Metric_Type" : "Unique_Title_Investigations"
+                  },
+                  {
+                     "Count" : 1,
+                     "Metric_Type" : "Unique_Title_Requests"
+                  }
+               ],
+               "Period" : {
+                  "Begin_Date" : "2023-07-01",
+                  "End_Date" : "2023-07-31"
+               }
+            }
+         ],
+         "Platform" : "vahlen - eLibrary",
+         "Publisher" : "Verlag C.H.Beck",
+         "Publisher_ID" : [
+            {
+               "Type" : "Proprietary",
+               "Value" : "vahelib:vahlen"
+            }
+         ],
+         "Section_Type" : "",
+         "Title" : "WiSt - Wirtschaftswissenschaftliches Studium",
+         "YOP" : "2020"
+      },
+      {
+         "Access_Method" : "Regular",
+         "Access_Type" : "Controlled",
+         "Data_Type" : "Journal",
+         "Item_ID" : [
+            {
+               "Type" : "DOI",
+               "Value" : "10.15358/0344-1369"
+            },
+            {
+               "Type" : "Proprietary",
+               "Value" : "vahelib:0344-1369"
+            },
+            {
+               "Type" : "Print_ISSN",
+               "Value" : "0344-1369"
+            },
+            {
+               "Type" : "Online_ISSN",
+               "Value" : "0344-1369"
+            },
+            {
+               "Type" : "URI",
+               "Value" : "https://www.beck-elibrary.de/10.15358/0344-1369"
+            }
+         ],
+         "Platform" : "vahlen - eLibrary",
+         "Publisher" : "Verlag C.H.Beck",
+         "Publisher_ID" : [
+            {
+               "Type" : "Proprietary",
+               "Value" : "vahelib:vahlen"
+            }
+         ],
+         "Section_Type" : "",
+         "Title" : "Marketing ZFP",
+         "YOP" : "2021"
+      }
+   ]
+}

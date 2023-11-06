@@ -247,3 +247,17 @@ class TestCounter5TableReports:
 
             for record in records:
                 pass
+
+    def test_item_without_performance(self):
+        """
+        Test that if the `Performance` key is missing in some of the items, the file will be
+        parsed correctly. Added to guard against a regression.
+        """
+        reader = Counter5TRReport()
+        records = list(
+            reader.file_to_records(Path(__file__).parent / 'data/counter5/no_performance.json')
+        )
+        assert len(records) == 4
+        assert all(
+            r.dimension_data['YOP'] == '2020' for r in records
+        ), 'all items are from the record for 2020'

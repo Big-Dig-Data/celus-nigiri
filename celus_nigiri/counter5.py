@@ -128,7 +128,7 @@ class Counter5ReportBase:
             title_ids = self._extract_title_ids(item.get('Item_ID', []) or [])
             dimension_data = self._extract_dimension_data(self.dimensions, item)
 
-            performances = item.get('Performance')
+            performances = item.get('Performance', [])
             for performance in performances:
                 period = performance.get('Period', {})
                 start = parse_date_fuzzy(period.get('Begin_Date'))
