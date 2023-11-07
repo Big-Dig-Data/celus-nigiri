@@ -9,7 +9,6 @@ from celus_nigiri.counter5 import CounterError, TransportError
 
 
 class TestSushi5:
-
     data_dir = Path(__file__).parent / 'data/counter5/'
 
     def test_successful_request(self):

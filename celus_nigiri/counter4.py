@@ -11,7 +11,6 @@ from .counter5 import CounterRecord
 
 
 class Counter4ReportBase:
-
     dimensions = []  # this should be redefined in subclasses
     allowed_item_ids = ['DOI', 'Online_ISSN', 'Print_ISSN', 'ISBN', 'Proprietary']
 
@@ -88,45 +87,36 @@ class Counter4ReportBase:
 
 
 class Counter4JR1Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Platform']
 
 
 class Counter4JR2Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Access Denied Category', 'Platform']
 
 
 class Counter4BR1Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Platform']
 
 
 class Counter4BR2Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Platform']
 
 
 class Counter4BR3Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Platform']
 
 
 class Counter4DB1Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Platform']
 
 
 class Counter4DB2Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Access Denied Category', 'Platform']
 
 
 class Counter4PR1Report(Counter4ReportBase):
-
     dimensions = ['Publisher', 'Platform']
 
 
 class Counter4MR1Report(Counter4ReportBase):
-
     dimensions = ['Content Provider', 'Platform']

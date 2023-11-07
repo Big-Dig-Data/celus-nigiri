@@ -97,7 +97,6 @@ ALLOWED_ITEM_IDS = {
 
 
 class Counter5ReportBase:
-
     dimensions = []  # this should be redefined in subclasses
     allowed_item_ids: typing.Dict[str, str] = {}  # this should be redefined in subclasses
 
@@ -311,7 +310,6 @@ class Counter5ReportBase:
 
 
 class Counter5DRReport(Counter5ReportBase):
-
     dimensions = ['Access_Method', 'Data_Type', 'Publisher', 'Platform']
     allowed_item_ids = ALLOWED_ITEM_IDS["DR"]
 
@@ -334,7 +332,6 @@ class Counter5TRReport(Counter5ReportBase):
 
 
 class Counter5PRReport(Counter5ReportBase):
-
     dimensions = ['Access_Method', 'Data_Type', 'Platform']
     allowed_item_ids = ALLOWED_ITEM_IDS["PR"]
 
@@ -345,7 +342,6 @@ class Counter5PRReport(Counter5ReportBase):
 
 
 class Counter5IRReport(Counter5ReportBase):
-
     dimensions = ['Access_Type', 'Access_Method', 'Data_Type', 'YOP', 'Publisher', 'Platform']
     allowed_item_ids = ALLOWED_ITEM_IDS["IR"]
 
@@ -355,7 +351,6 @@ class Counter5IRReport(Counter5ReportBase):
 
 
 class Counter5IRM1Report(Counter5IRReport):
-
     dimensions = ['Publisher', 'Platform']
     allowed_item_ids = ALLOWED_ITEM_IDS["IR_M1"]
 
@@ -421,7 +416,6 @@ class Counter5TableReport:
             raise ValueError(f"Unsupported IDs ({extra}) for report_type {report_type}")
 
     def _fd_to_records(self, infile, dialect) -> typing.Generator[CounterRecord, None, None]:
-
         # read the header
         header = {}
         reader = csv.reader(infile, dialect=dialect)

@@ -70,7 +70,6 @@ def histogram_score(histogram: typing.Counter[int]) -> int:
 def csv_line_length_histogram(
     file: typing.IO[str], dialect: csv.Dialect, max_lines: typing.Optional[int] = 200
 ) -> typing.Counter[int]:
-
     orig_file_pos = file.tell()
     file.seek(0)
 

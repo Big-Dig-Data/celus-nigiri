@@ -31,11 +31,11 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.8.9"
 
 dateparser = "~1.1.1"
 chardet = "^5.0.0"
-ijson = "~3.1.4"
+ijson = "~3.2.3"
 pycounter = {git = "https://github.com/beda42/pycounter.git", rev = "11ff555d814065f51fb780fa6bf6386446c7f1de"}
 python-decouple = "^3.6"
 xmltodict = "~0.13.0"
@@ -45,10 +45,10 @@ nigiri-csv = 'celus_nigiri.csv_detect.__main__:main'
 
 
 [tool.poetry.dev-dependencies]
-black = "22.6.0"
-flake8 = "~4.0.1"
-isort = "~5.10.1"
-pre-commit = "~2.20.0"
-pytest = "~7.1.2"
-pytest-cov = "~3.0.0"
-requests-mock = "~1.9.3"
+black = "~23.10.0"
+flake8 = "~6.1.0"
+isort = "~5.12.0"
+pre-commit = "~3.5.0"
+pytest = "~7.4.3"
+pytest-cov = "~4.1.0"
+requests-mock = "~1.11.0"

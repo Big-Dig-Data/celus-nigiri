@@ -25,7 +25,6 @@ class TestErrors:
         ),
     )
     def test_error_extraction(self, filename, code, severity):
-
         client = Sushi4Client("https://example.com/", "user")
 
         with (Path(__file__).parent / "data/counter4/" / filename).open("rb") as f:

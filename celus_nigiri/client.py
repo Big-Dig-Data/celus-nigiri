@@ -75,7 +75,6 @@ def recursive_finder(
             for found in recursive_finder(e, names):
                 yield found
     elif isinstance(data, dict):
-
         for key, data in data.items():
             if convert_key(key) in lower_names:
                 yield data

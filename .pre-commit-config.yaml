@@ -20,7 +20,7 @@ repos:
 
     - id: black
       name: "Python: Black formatter"
-      entry: poetry run black --check
+      entry: poetry run black
       language: system
       types: [python]
 
