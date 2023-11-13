@@ -9,8 +9,8 @@ from urllib.parse import urlparse
 
 import requests
 import xmltodict
+from celus_pycounter import report, sushi
 from decouple import Csv, config
-from pycounter import report, sushi
 from requests import Response
 
 from .counter5 import (
@@ -404,7 +404,7 @@ class Sushi5Client(SushiClientBase):
 class Sushi4Client(SushiClientBase):
 
     """
-    Client for SUSHI and COUNTER 4 protocol - a simple proxy for the pycounter.sushi
+    Client for SUSHI and COUNTER 4 protocol - a simple proxy for the celus_pycounter.sushi
     implementation
     """
 

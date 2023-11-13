@@ -4,8 +4,8 @@ Module dealing with data in the COUNTER4 format as provided by the pycounter lib
 
 import typing
 
-from pycounter import report
-from pycounter.report import CounterEresource, CounterReport
+from celus_pycounter import report
+from celus_pycounter.report import CounterEresource, CounterReport
 
 from .counter5 import CounterRecord
 
