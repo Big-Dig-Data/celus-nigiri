@@ -41,6 +41,7 @@ python-decouple = "^3.6"
 xmltodict = "~0.13.0"
 
 [tool.poetry.scripts]
+nigiri-download = 'celus_nigiri.download.__main__:main'
 nigiri-csv = 'celus_nigiri.csv_detect.__main__:main'
 
 
