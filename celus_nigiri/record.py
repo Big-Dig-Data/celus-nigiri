@@ -20,6 +20,12 @@ class CounterRecord:
     # ISBN (books), ISSN (periodics), EISSN (same thing only for electronic version of publications)
     title_ids: typing.Dict[str, str] = field(default_factory=dict)
 
+    # name of item
+    item: typing.Optional[str] = None
+
+    # ISBN (books), ISSN (periodics), EISSN (same thing only for electronic version of publications)
+    item_ids: typing.Dict[str, str] = field(default_factory=dict)
+
     # contains more details
     dimension_data: typing.Dict[str, str] = field(default_factory=dict)
 
@@ -45,9 +51,11 @@ class CounterRecord:
             format_date(self.end),
             self.organization or "",
             self.title or "",
-            self.metric or "",
-            serialize_dict(self.dimension_data),
             serialize_dict(self.title_ids),
+            self.item or "",
+            serialize_dict(self.item_ids),
+            serialize_dict(self.dimension_data),
+            self.metric or "",
             str(self.value),
         )
 

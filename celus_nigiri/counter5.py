@@ -126,7 +126,9 @@ class Counter5ReportBase:
             self.check_item(item)
 
             title = self._item_get_title(item)
-            title_ids = self._extract_title_ids(item.get('Item_ID', []) or [])
+            title_ids = self._item_get_title_ids(item)
+            item_name = self._item_get_item(item)
+            item_ids = self._item_get_item_ids(item)
             dimension_data = self._extract_dimension_data(self.dimensions, item)
 
             performances = item.get('Performance', [])
@@ -143,6 +145,8 @@ class Counter5ReportBase:
                         end=end,
                         title=title,
                         title_ids=title_ids,
+                        item=item_name,
+                        item_ids=item_ids,
                         dimension_data=dimension_data,
                     )
 
@@ -318,10 +322,23 @@ class Counter5ReportBase:
     def _item_get_title(cls, item):
         return item.get('Title')
 
-    def _extract_title_ids(self, values: list) -> dict:
+    @classmethod
+    def _item_get_title_ids(cls, item) -> typing.Dict[str, str]:
+        return cls._extract_title_ids(item.get('Item_ID', []) or [])
+
+    @classmethod
+    def _item_get_item_ids(self, item) -> typing.Dict[str, str]:
+        return {}
+
+    @classmethod
+    def _item_get_item(self, item) -> typing.Optional[str]:
+        return None
+
+    @classmethod
+    def _extract_title_ids(cls, values: list) -> dict:
         ret = {}
         for value in values:
-            if id_type := self.allowed_item_ids.get(value.get('Type')):
+            if id_type := cls.allowed_item_ids.get(value.get('Type')):
                 ret[id_type] = value.get('Value')
         return ret
 
@@ -331,6 +348,13 @@ class Counter5ReportBase:
         for dim in dimensions:
             if dim in record:
                 ret[dim] = record[dim]
+            else:
+                # Try to extract dimension from Item_Attributes
+                item_attributes = record.get("Item_Attributes", [])
+                for item_attribute in item_attributes:
+                    if item_attribute.get("Type") == dim:
+                        ret[dim] = item_attribute.get("Value", "")
+                        break
         return ret
 
 
@@ -367,12 +391,32 @@ class Counter5PRReport(Counter5ReportBase):
 
 
 class Counter5IRReport(Counter5ReportBase):
-    dimensions = ['Access_Type', 'Access_Method', 'Data_Type', 'YOP', 'Publisher', 'Platform']
+    dimensions = [
+        'Access_Type',
+        'Access_Method',
+        'Data_Type',
+        'YOP',
+        'Publisher',
+        'Platform',
+        'Article_Version',
+    ]
     allowed_item_ids = ALLOWED_ITEM_IDS["IR"]
 
     @classmethod
     def _item_get_title(cls, item):
-        return item.get('Item')
+        return item.get("Item_Parent", {}).get("Item_Name", "")
+
+    @classmethod
+    def _item_get_item(cls, item):
+        return item.get("Item", "")
+
+    @classmethod
+    def _item_get_item_ids(cls, item):
+        return cls._extract_title_ids(item.get("Item_ID", []) or [])
+
+    @classmethod
+    def _item_get_title_ids(cls, item):
+        return cls._extract_title_ids(item.get("Item_Parent", {}).get('Item_ID', []) or [])
 
 
 class Counter5IRM1Report(Counter5IRReport):
