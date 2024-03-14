@@ -148,10 +148,11 @@ class Sushi5Client(SushiClientBase):
         # split data in TR report to most possible dimensions for most granular data
         'maximum_split': {
             'tr': {'attributes_to_show': 'YOP|Access_Method|Access_Type|Data_Type|Section_Type'},
-            'ir': {'attributes_to_show': 'YOP|Access_Method|Access_Type|Data_Type'},
+            'ir': {'attributes_to_show': 'YOP|Access_Method|Access_Type|Data_Type|Article_Version'},
             'pr': {'attributes_to_show': 'Access_Method|Data_Type'},
             'dr': {'attributes_to_show': 'Access_Method|Data_Type'},
-        }
+        },
+        'filters': {'ir': {'include_parent_details': True}},
     }
 
     def __init__(self, url, requestor_id, customer_id=None, extra_params=None, auth=None):
