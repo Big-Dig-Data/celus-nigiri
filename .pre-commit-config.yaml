@@ -12,20 +12,14 @@ repos:
 
   - repo: local
     hooks:
-    - id: isort
-      name: "Python: isort formatter"
-      entry: poetry run isort -c
+    - id: ruff-linter
+      name: "Python: Ruff linter"
+      entry: poetry run ruff check --fix
       language: system
       types: [python]
 
-    - id: black
-      name: "Python: Black formatter"
-      entry: poetry run black
-      language: system
-      types: [python]
-
-    - id: flake8
-      name: "Python: Flake8 linter"
-      entry: poetry run flake8
+    - id: ruff-format
+      name: "Python: Ruff formatter"
+      entry: poetry run ruff format
       language: system
       types: [python]

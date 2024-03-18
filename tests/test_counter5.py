@@ -16,26 +16,26 @@ from celus_nigiri.exceptions import SushiException
 class TestCounter5Reading:
     def test_record_simple_tr(self):
         reader = Counter5TRReport()
-        path = Path(__file__).parent / 'data/counter5/data_simple.json'
+        path = Path(__file__).parent / "data/counter5/data_simple.json"
         records = [e for e in reader.file_to_records(path)]
         assert len(records) == 2
-        assert records[0].title == 'Title1'
-        assert records[0].metric == 'Total_Item_Investigations'
+        assert records[0].title == "Title1"
+        assert records[0].metric == "Total_Item_Investigations"
         assert records[0].value == 10
         assert records[0].start == date(2019, 5, 1)
         assert records[0].end == date(2019, 5, 31)
         assert records[0].value == 10
         assert records[0].dimension_data == {
-            'Access_Type': 'OA_Gold',
-            'Publisher': 'Pub1',
-            'Access_Method': 'Regular',
-            'YOP': '2009',
-            'Section_Type': 'Chapter',
-            'Data_Type': 'Book',
-            'Platform': 'PlOne',
+            "Access_Type": "OA_Gold",
+            "Publisher": "Pub1",
+            "Access_Method": "Regular",
+            "YOP": "2009",
+            "Section_Type": "Chapter",
+            "Data_Type": "Book",
+            "Platform": "PlOne",
         }
         # same item in the data
-        for attr in ('title', 'start', 'end'):
+        for attr in ("title", "start", "end"):
             assert getattr(records[0], attr) == getattr(records[1], attr)
         assert records[1].value == 8
 
@@ -51,7 +51,7 @@ class TestCounter5Reading:
             [
                 e
                 for e in reader.file_to_records(
-                    Path(__file__).parent / 'data/counter5/data_incorrect.json'
+                    Path(__file__).parent / "data/counter5/data_incorrect.json"
                 )
             ]
 
@@ -62,7 +62,7 @@ class TestCounter5Reading:
         Check that we can properly parse this type of data.
         """
         reader = Counter5TRReport()
-        path = Path(__file__).parent / 'data/counter5/extra_body_wrap.json'
+        path = Path(__file__).parent / "data/counter5/extra_body_wrap.json"
         records = [e for e in reader.file_to_records(path)]
         assert len(records) == 30  # 7 titles, metrics - 1, 5, 5, 2, 6, 5, 6
         with path.open("rb") as f:
@@ -78,13 +78,13 @@ class TestCounter5Reading:
         records = [
             e
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/extra_body_wrap-exception.json'
+                Path(__file__).parent / "data/counter5/extra_body_wrap-exception.json"
             )
         ]
         assert len(records) == 0
         assert len(reader.errors) == 1
         error = reader.errors[0]
-        assert error.code == '3030'
+        assert error.code == "3030"
 
     def test_reading_wrapped_in_body_exception2(self):
         """
@@ -94,19 +94,19 @@ class TestCounter5Reading:
         records = [
             e
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/extra_body_wrap-exception2.json'
+                Path(__file__).parent / "data/counter5/extra_body_wrap-exception2.json"
             )
         ]
         assert len(records) == 0
         assert len(reader.errors) == 1
         error = reader.errors[0]
-        assert str(error.code) == '1001'
+        assert str(error.code) == "1001"
 
     def test_no_exception_no_data(self):
         """
         There is no exception in the header, but also no data (no data found for such period)
         """
-        path = Path(__file__).parent / 'data/counter5/no_data.json'
+        path = Path(__file__).parent / "data/counter5/no_data.json"
         reader = Counter5TRReport()
         records = [e for e in reader.file_to_records(path)]
         assert len(records) == 0
@@ -124,7 +124,7 @@ class TestCounter5Reading:
         records = [
             e
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/naked_error.json'
+                Path(__file__).parent / "data/counter5/naked_error.json"
             )
         ]
         assert len(records) == 0
@@ -139,7 +139,7 @@ class TestCounter5Reading:
         records = [
             e
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/naked_errors.json'
+                Path(__file__).parent / "data/counter5/naked_errors.json"
             )
         ]
         assert len(records) == 0
@@ -155,13 +155,13 @@ class TestCounter5Reading:
         records = [
             e
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/stringified_error.json'
+                Path(__file__).parent / "data/counter5/stringified_error.json"
             )
         ]
         assert len(records) == 0
         assert len(reader.errors) == 1
         error = reader.errors[0]
-        assert str(error.code) == '2090'
+        assert str(error.code) == "2090"
 
     def test_severity_as_number(self):
         """
@@ -171,35 +171,35 @@ class TestCounter5Reading:
         records = [
             e
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/severity-number.json'
+                Path(__file__).parent / "data/counter5/severity-number.json"
             )
         ]
         assert len(records) == 0
         assert len(reader.errors) == 1
         error = reader.errors[0]
-        assert str(error.code) == '3010'
-        assert str(error.severity.lower()) == 'error'
+        assert str(error.code) == "3010"
+        assert str(error.severity.lower()) == "error"
 
     def test_severity_is_missing(self):
         reader = Counter5TRReport()
         records = [
             e
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/severity-missing.json'
+                Path(__file__).parent / "data/counter5/severity-missing.json"
             )
         ]
         assert len(records) == 0
         assert len(reader.errors) == 1
         error = reader.errors[0]
-        assert str(error.code) == '3010'
-        assert str(error.severity.lower()) == 'error'
+        assert str(error.code) == "3010"
+        assert str(error.severity.lower()) == "error"
 
     def test_no_extra_ids(self):
         reader = Counter5DRReport()
         counter = 0
         with pytest.raises(SushiException):
             for e in reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/dr-extra-ids.json'
+                Path(__file__).parent / "data/counter5/dr-extra-ids.json"
             ):
                 counter += 1
                 pass
@@ -211,7 +211,7 @@ class TestCounter5TableReports:
     def test_dr_csv(self):
         reader = Counter5TableReport()
         records = list(
-            reader.file_to_records(Path(__file__).parent / 'data/counter5/counter5_table_dr.csv')
+            reader.file_to_records(Path(__file__).parent / "data/counter5/counter5_table_dr.csv")
         )
         assert len(records) == 121
         assert records[0].value == 42
@@ -220,17 +220,17 @@ class TestCounter5TableReports:
     def test_dr_tsv(self):
         reader = Counter5TableReport()
         records = list(
-            reader.file_to_records(Path(__file__).parent / 'data/counter5/counter5_table_dr.tsv')
+            reader.file_to_records(Path(__file__).parent / "data/counter5/counter5_table_dr.tsv")
         )
         assert len(records) == 121
         assert records[0].value == 42
         assert records[-1].value == 1
 
     @pytest.mark.parametrize(
-        ['rt', 'count', 'first_number', 'months'],
+        ["rt", "count", "first_number", "months"],
         [
             (
-                'PR',
+                "PR",
                 42,
                 10,
                 [
@@ -243,7 +243,7 @@ class TestCounter5TableReports:
                 ],
             ),
             (
-                'TR',
+                "TR",
                 24,
                 100,
                 [
@@ -256,7 +256,7 @@ class TestCounter5TableReports:
                 ],
             ),
             (
-                'DR',
+                "DR",
                 30,
                 1,
                 [
@@ -275,7 +275,7 @@ class TestCounter5TableReports:
         Takes slightly modified version of the official example reports from COUNTER and tries
         to read them.
         """
-        path = Path(__file__).parent / f'data/counter5/COUNTER_R5_Report_Examples_{rt}.csv'
+        path = Path(__file__).parent / f"data/counter5/COUNTER_R5_Report_Examples_{rt}.csv"
         reader = Counter5TableReport()
 
         records = list(reader.file_to_records(path))
@@ -289,7 +289,7 @@ class TestCounter5TableReports:
         reader = Counter5TableReport()
         with pytest.raises(ValueError):
             records = reader.file_to_records(
-                Path(__file__).parent / 'data/counter5/counter5_table_mismatched_rt.csv'
+                Path(__file__).parent / "data/counter5/counter5_table_mismatched_rt.csv"
             )
 
             for record in records:
@@ -302,16 +302,16 @@ class TestCounter5TableReports:
         """
         reader = Counter5TRReport()
         records = list(
-            reader.file_to_records(Path(__file__).parent / 'data/counter5/no_performance.json')
+            reader.file_to_records(Path(__file__).parent / "data/counter5/no_performance.json")
         )
         assert len(records) == 4
         assert all(
-            r.dimension_data['YOP'] == '2020' for r in records
-        ), 'all items are from the record for 2020'
+            r.dimension_data["YOP"] == "2020" for r in records
+        ), "all items are from the record for 2020"
 
     def test_record_ir(self):
         reader = Counter5IRReport()
-        path = Path(__file__).parent / 'data/counter5/counter5_ir.json'
+        path = Path(__file__).parent / "data/counter5/counter5_ir.json"
         records = [e for e in reader.file_to_records(path)]
         assert len(records) == 24
         assert [e.as_csv() for e in records] == [

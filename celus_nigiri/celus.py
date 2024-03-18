@@ -1,4 +1,5 @@
-""" Celus format for non-counter data """
+"""Celus format for non-counter data"""
+
 import csv
 import typing
 import warnings
@@ -9,10 +10,10 @@ from celus_nigiri import CounterRecord
 from celus_nigiri.utils import parse_date_fuzzy
 
 DEFAULT_COLUMN_MAP = {
-    'Metric': 'metric',
-    'Organization': 'organization',
-    'Source': 'title',
-    'Title': 'title',
+    "Metric": "metric",
+    "Organization": "organization",
+    "Source": "title",
+    "Title": "title",
 }
 
 

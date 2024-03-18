@@ -10,8 +10,8 @@ from celus_nigiri.celus import custom_data_to_records, get_months
 
 def test_custom_data_to_records_1():
     data = [
-        {'Metric': 'M1', 'Jan 2019': 10, 'Feb 2019': 7, 'Mar 2019': 11},
-        {'Metric': 'M2', 'Jan 2019': 1, 'Feb 2019': 2, 'Mar 2019': 3},
+        {"Metric": "M1", "Jan 2019": 10, "Feb 2019": 7, "Mar 2019": 11},
+        {"Metric": "M2", "Jan 2019": 1, "Feb 2019": 2, "Mar 2019": 3},
     ]
     records = [e for e in custom_data_to_records(data)]
     assert len(records) == 6
@@ -19,54 +19,54 @@ def test_custom_data_to_records_1():
         assert record.value in (1, 2, 3, 7, 10, 11)
         assert record.start in (date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1))
         if record.value in (10, 7, 11):
-            assert record.metric == 'M1'
+            assert record.metric == "M1"
             if record.start == date(2019, 1, 1):
                 assert record.value == 10
         else:
-            assert record.metric == 'M2'
+            assert record.metric == "M2"
 
 
 def test_custom_data_to_records_with_column_map():
     data = [
-        {'MetricXX': 'M1', 'Jan 2019': 10, 'Feb 2019': 7, 'Mar 2019': 11},
-        {'MetricXX': 'M2', 'Jan 2019': 1, 'Feb 2019': 2, 'Mar 2019': 3},
+        {"MetricXX": "M1", "Jan 2019": 10, "Feb 2019": 7, "Mar 2019": 11},
+        {"MetricXX": "M2", "Jan 2019": 1, "Feb 2019": 2, "Mar 2019": 3},
     ]
-    records = custom_data_to_records(data, column_map={'MetricXX': 'metric'})
+    records = custom_data_to_records(data, column_map={"MetricXX": "metric"})
     records = [e for e in records]  # convert generator to a list
     assert len(records) == 6
     for record in records:
         assert record.value in (1, 2, 3, 7, 10, 11)
         assert record.start in (date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1))
         if record.value in (10, 7, 11):
-            assert record.metric == 'M1'
+            assert record.metric == "M1"
             if record.start == date(2019, 1, 1):
                 assert record.value == 10
         else:
-            assert record.metric == 'M2'
+            assert record.metric == "M2"
 
 
 def test_custom_data_to_records_no_metric():
     data = [
-        {'Jan 2019': 10, 'Feb 2019': 7, 'Mar 2019': 11},
-        {'Jan 2019': 1, 'Feb 2019': 2, 'Mar 2019': 3, 'Metric': 'MX'},
+        {"Jan 2019": 10, "Feb 2019": 7, "Mar 2019": 11},
+        {"Jan 2019": 1, "Feb 2019": 2, "Mar 2019": 3, "Metric": "MX"},
     ]
-    records = custom_data_to_records(data, initial_data={'metric': 'MD'})
+    records = custom_data_to_records(data, initial_data={"metric": "MD"})
     records = [e for e in records]  # convert generator to a list
     assert len(records) == 6
     for record in records:
         assert record.value in (1, 2, 3, 7, 10, 11)
         assert record.start in (date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1))
         if record.value in (10, 7, 11):
-            assert record.metric == 'MD'
+            assert record.metric == "MD"
         else:
-            assert record.metric == 'MX'
+            assert record.metric == "MX"
 
 
 @pytest.mark.parametrize(
-    ['filename', 'output'],
+    ["filename", "output"],
     [
         (
-            'custom_data-2d-3x2x3-endate.csv',
+            "custom_data-2d-3x2x3-endate.csv",
             [
                 CounterRecord(start=date(2019, 1, 1), title="Title 1", metric="Metric 1", value=1),
                 CounterRecord(start=date(2019, 2, 1), title="Title 1", metric="Metric 1", value=4),
@@ -89,7 +89,7 @@ def test_custom_data_to_records_no_metric():
             ],
         ),
         (
-            'custom_data-2d-3x2x3-isodate.csv',
+            "custom_data-2d-3x2x3-isodate.csv",
             [
                 CounterRecord(start=date(2019, 1, 1), title="Title 1", metric="Metric 1", value=1),
                 CounterRecord(start=date(2019, 2, 1), title="Title 1", metric="Metric 1", value=4),
@@ -112,7 +112,7 @@ def test_custom_data_to_records_no_metric():
             ],
         ),
         (
-            'custom_data-simple-3x3-endate.csv',
+            "custom_data-simple-3x3-endate.csv",
             [
                 CounterRecord(start=date(2019, 1, 1), title="Title 1", value=1),
                 CounterRecord(start=date(2019, 2, 1), title="Title 1", value=4),
@@ -126,7 +126,7 @@ def test_custom_data_to_records_no_metric():
             ],
         ),
         (
-            'custom_data-simple-3x3-isodate.csv',
+            "custom_data-simple-3x3-isodate.csv",
             [
                 CounterRecord(start=date(2019, 1, 1), title="Title 1", value=1),
                 CounterRecord(start=date(2019, 2, 1), title="Title 1", value=4),
@@ -140,7 +140,7 @@ def test_custom_data_to_records_no_metric():
             ],
         ),
         (
-            'custom_data-2d-3x2x3-org-isodate.csv',
+            "custom_data-2d-3x2x3-org-isodate.csv",
             [
                 CounterRecord(
                     start=date(2019, 1, 1),
@@ -399,7 +399,7 @@ def test_custom_data_to_records_no_metric():
     ],
 )
 def test_file_parsing(filename, output):
-    path = Path(__file__).parent / 'data/custom' / filename
+    path = Path(__file__).parent / "data/custom" / filename
     with path.open() as f:
         reader = csv.DictReader(f)
         records = list(custom_data_to_records(reader))
@@ -408,28 +408,28 @@ def test_file_parsing(filename, output):
 
 
 @pytest.mark.parametrize(
-    ['filename', 'months'],
+    ["filename", "months"],
     [
         (
-            'custom_data-2d-3x2x3-isodate.csv',
+            "custom_data-2d-3x2x3-isodate.csv",
             [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
         ),
-        ('custom_data-2d-3x2x3-endate.csv', [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)]),
+        ("custom_data-2d-3x2x3-endate.csv", [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)]),
         (
-            'custom_data-2d-3x2x3-org-isodate.csv',
-            [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
-        ),
-        (
-            'custom_data-simple-3x3-isodate.csv',
+            "custom_data-2d-3x2x3-org-isodate.csv",
             [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
         ),
         (
-            'custom_data-simple-3x3-endate.csv',
+            "custom_data-simple-3x3-isodate.csv",
+            [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
+        ),
+        (
+            "custom_data-simple-3x3-endate.csv",
             [date(2019, 1, 1), date(2019, 2, 1), date(2019, 3, 1)],
         ),
     ],
 )
 def test_file_months(filename, months):
-    path = Path(__file__).parent / 'data/custom' / filename
+    path = Path(__file__).parent / "data/custom" / filename
     with path.open() as f:
         assert get_months(f) == months

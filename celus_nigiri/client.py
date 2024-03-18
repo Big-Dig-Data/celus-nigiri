@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class SushiError:
-    def __init__(self, code='', text='', full_log='', raw_data=None, severity=None, data=None):
+    def __init__(self, code="", text="", full_log="", raw_data=None, severity=None, data=None):
         self.code = code
         self.severity = severity if isinstance(severity, str) else error_code_to_severity(code)
         self.text = text
@@ -111,48 +111,47 @@ class SushiClientBase:
 
 
 class Sushi5Client(SushiClientBase):
-
     """
     Client for SUSHI and COUNTER 5 protocol
     """
 
-    CUSTOMER_ID_PARAM = 'customer_id'
-    REQUESTOR_ID_PARAM = 'requestor_id'
+    CUSTOMER_ID_PARAM = "customer_id"
+    REQUESTOR_ID_PARAM = "requestor_id"
 
     report_types = {
-        'tr': {
-            'name': 'Title report',
-            'subreports': {
-                'b1': 'Book requests excluding OA_Gold',
-                'b2': 'Books - access denied',
-                'b3': 'Book Usage by Access Type',
-                'j1': 'Journal requests excluding OA_Gold',
-                'j2': 'Journal articles - access denied',
-                'j3': 'Journal usage by Access Type',
-                'j4': 'Journal Requests by YOP (Excluding OA_Gold)',
+        "tr": {
+            "name": "Title report",
+            "subreports": {
+                "b1": "Book requests excluding OA_Gold",
+                "b2": "Books - access denied",
+                "b3": "Book Usage by Access Type",
+                "j1": "Journal requests excluding OA_Gold",
+                "j2": "Journal articles - access denied",
+                "j3": "Journal usage by Access Type",
+                "j4": "Journal Requests by YOP (Excluding OA_Gold)",
             },
         },
-        'dr': {
-            'name': 'Database report',
-            'subreports': {'d1': 'Search and Item usage', 'd2': 'Database Access Denied'},
+        "dr": {
+            "name": "Database report",
+            "subreports": {"d1": "Search and Item usage", "d2": "Database Access Denied"},
         },
-        'ir': {
-            'name': 'Item report',
-            'subreports': {'a1': 'Journal article requests', 'm1': 'Multimedia item requests'},
+        "ir": {
+            "name": "Item report",
+            "subreports": {"a1": "Journal article requests", "m1": "Multimedia item requests"},
         },
-        'pr': {'name': 'Platform report', 'subreports': {'p1': 'View by Metric_Type'}},
+        "pr": {"name": "Platform report", "subreports": {"p1": "View by Metric_Type"}},
     }
 
     # sets of additional parameters for specific setups
     EXTRA_PARAMS = {
         # split data in TR report to most possible dimensions for most granular data
-        'maximum_split': {
-            'tr': {'attributes_to_show': 'YOP|Access_Method|Access_Type|Data_Type|Section_Type'},
-            'ir': {'attributes_to_show': 'YOP|Access_Method|Access_Type|Data_Type|Article_Version'},
-            'pr': {'attributes_to_show': 'Access_Method|Data_Type'},
-            'dr': {'attributes_to_show': 'Access_Method|Data_Type'},
+        "maximum_split": {
+            "tr": {"attributes_to_show": "YOP|Access_Method|Access_Type|Data_Type|Section_Type"},
+            "ir": {"attributes_to_show": "YOP|Access_Method|Access_Type|Data_Type|Article_Version"},
+            "pr": {"attributes_to_show": "Access_Method|Data_Type"},
+            "dr": {"attributes_to_show": "Access_Method|Data_Type"},
         },
-        'filters': {'ir': {'include_parent_details': True}},
+        "filters": {"ir": {"include_parent_details": True}},
     }
 
     def __init__(self, url, requestor_id, customer_id=None, extra_params=None, auth=None):
@@ -160,33 +159,36 @@ class Sushi5Client(SushiClientBase):
         self.session = requests.Session()
         self.session.headers.update(
             {
-                'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0'
+                "User-Agent": (
+                    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:68.0) Gecko/20100101 "
+                    "Firefox/68.0"
+                )
             }
         )
         proxy = self._get_proxy(url)
         if proxy:
-            logger.debug('Using proxy %s for server %s', proxy['proxy'], url)
-            proxy_rec = 'http://{username}:{password}@{proxy}:{port}/'.format(**proxy)
-            self.session.proxies.update({'http': proxy_rec, 'https': proxy_rec})
+            logger.debug("Using proxy %s for server %s", proxy["proxy"], url)
+            proxy_rec = "http://{username}:{password}@{proxy}:{port}/".format(**proxy)
+            self.session.proxies.update({"http": proxy_rec, "https": proxy_rec})
 
     def _get_proxy(self, url):
         parsed = urlparse(url)
         proxy_settings = config(
-            'SUSHI_PROXIES', cast=Csv(cast=Csv(post_process=tuple), delimiter=';'), default=''
+            "SUSHI_PROXIES", cast=Csv(cast=Csv(post_process=tuple), delimiter=";"), default=""
         )
         for rec in proxy_settings:
             if len(rec) != 5:
-                logger.warning('Incorrect proxy definition: [%s]', rec)
+                logger.warning("Incorrect proxy definition: [%s]", rec)
                 continue
             if not rec[2].isdigit():
-                logger.warning('Incorrect proxy port: [%s]', rec[2])
+                logger.warning("Incorrect proxy port: [%s]", rec[2])
                 continue
             if rec[0] == parsed.netloc:
                 return {
-                    'proxy': rec[1],
-                    'port': int(rec[2]),
-                    'username': rec[3],
-                    'password': rec[4],
+                    "proxy": rec[1],
+                    "port": int(rec[2]),
+                    "username": rec[3],
+                    "password": rec[4],
                 }
 
     @classmethod
@@ -197,7 +199,7 @@ class Sushi5Client(SushiClientBase):
         >>> Sushi5Client._encode_date(datetime(2018, 7, 6, 12, 25, 30))
         '2018-07'
         """
-        if hasattr(value, 'isoformat'):
+        if hasattr(value, "isoformat"):
             return value.isoformat()[:7]
         return value[:7]
 
@@ -214,10 +216,10 @@ class Sushi5Client(SushiClientBase):
         return result
 
     def _make_request(self, url, params, stream=False):
-        logger.debug('Making request to :%s?%s', url, urllib.parse.urlencode(params))
+        logger.debug("Making request to :%s?%s", url, urllib.parse.urlencode(params))
         kwargs = {}
         if self.auth:
-            kwargs['auth'] = self.auth
+            kwargs["auth"] = self.auth
         return self.session.get(url, params=params, stream=stream, **kwargs)
 
     def get_available_reports_raw(self, params=None) -> bytes:
@@ -225,7 +227,7 @@ class Sushi5Client(SushiClientBase):
         Return a list of available reports
         :return:
         """
-        url = '/'.join([self.url.rstrip('/'), 'reports/'])
+        url = "/".join([self.url.rstrip("/"), "reports/"])
         params = self._construct_url_params(extra=params)
         response = self._make_request(url, params)
         response.raise_for_status()
@@ -255,10 +257,10 @@ class Sushi5Client(SushiClientBase):
         :return:
         """
         report_type = self._check_report_type(report_type)
-        url = '/'.join([self.url.rstrip('/'), 'reports', report_type])
+        url = "/".join([self.url.rstrip("/"), "reports", report_type])
         params = self._construct_url_params(extra=params)
-        params['begin_date'] = self._encode_date(begin_date)
-        params['end_date'] = self._encode_date(end_date)
+        params["begin_date"] = self._encode_date(begin_date)
+        params["end_date"] = self._encode_date(end_date)
         response = self._make_request(url, params, stream=bool(dump_file))
         if dump_file is not None:
             for data in response.iter_content(1024 * 1024):
@@ -283,15 +285,15 @@ class Sushi5Client(SushiClientBase):
             # in the body
             report_class: typing.Type[Counter5ReportBase]
             report_id = report_type.lower()
-            if report_id == 'tr':
+            if report_id == "tr":
                 report_class = Counter5TRReport
-            elif report_id == 'dr':
+            elif report_id == "dr":
                 report_class = Counter5DRReport
-            elif report_id == 'pr':
+            elif report_id == "pr":
                 report_class = Counter5PRReport
-            elif report_id == 'ir':
+            elif report_id == "ir":
                 report_class = Counter5IRReport
-            elif report_id == 'ir_m1':
+            elif report_id == "ir_m1":
                 report_class = Counter5IRM1Report
             else:
                 raise NotImplementedError()
@@ -324,7 +326,7 @@ class Sushi5Client(SushiClientBase):
         if len(errors) == 1:
             errors[0].raise_me()
         elif len(errors) >= 1:
-            message = '; '.join(
+            message = "; ".join(
                 cls._format_error(error.to_sushi_dict()).full_log for error in errors
             )
             raise SushiException(message, content=[e.data for e in errors])
@@ -376,9 +378,9 @@ class Sushi5Client(SushiClientBase):
             # Some responses contains "number" instead of "code"
             code = next(recursive_finder(exc, ["number"]), "")
 
-        message = f'{severity} error {code}: {text}'
+        message = f"{severity} error {code}: {text}"
         if data:
-            message += f'; {data}'
+            message += f"; {data}"
 
         error = SushiError(
             code=code, text=text, full_log=message, severity=severity, raw_data=exc, data=data
@@ -387,15 +389,15 @@ class Sushi5Client(SushiClientBase):
 
     def _check_report_type(self, report_type):
         report_type = report_type.lower()
-        if '_' in report_type:
-            main_type, subtype = report_type.split('_', 1)
+        if "_" in report_type:
+            main_type, subtype = report_type.split("_", 1)
         else:
             main_type = report_type
             subtype = None
         if main_type not in self.report_types:
-            raise ValueError(f'Report type {main_type} is not supported.')
-        if subtype and subtype not in self.report_types[main_type]['subreports']:
-            raise ValueError(f'Report subtype {subtype} is not supported for type {main_type}.')
+            raise ValueError(f"Report type {main_type} is not supported.")
+        if subtype and subtype not in self.report_types[main_type]["subreports"]:
+            raise ValueError(f"Report subtype {subtype} is not supported for type {main_type}.")
         return report_type
 
     def report_to_string(self, report_data):
@@ -403,7 +405,6 @@ class Sushi5Client(SushiClientBase):
 
 
 class Sushi4Client(SushiClientBase):
-
     """
     Client for SUSHI and COUNTER 4 protocol - a simple proxy for the celus_pycounter.sushi
     implementation
@@ -416,14 +417,14 @@ class Sushi4Client(SushiClientBase):
         return CONVERSIONS.get(celus_report_type, celus_report_type)
 
     # remap of extra params into names that have special meaning for the pycounter client
-    extra_params_remap = {'Name': 'requestor_name', 'Email': 'requestor_email'}
+    extra_params_remap = {"Name": "requestor_name", "Email": "requestor_email"}
 
     def __init__(self, url, requestor_id, customer_id=None, extra_params=None, auth=None):
         super().__init__(url, requestor_id, customer_id, extra_params, auth)
 
     @classmethod
     def _encode_date(cls, value) -> str:
-        if hasattr(value, 'isoformat'):
+        if hasattr(value, "isoformat"):
             return value.isoformat()[:7]
         return value[:7]
 
@@ -435,9 +436,9 @@ class Sushi4Client(SushiClientBase):
         output_content: typing.Optional[typing.IO] = None,
         params=None,
     ) -> report.CounterReport:
-        kwargs = {'customer_reference': self.customer_id}
+        kwargs = {"customer_reference": self.customer_id}
         if self.requestor_id:
-            kwargs['requestor_id'] = self.requestor_id
+            kwargs["requestor_id"] = self.requestor_id
         if params:
             # recode params that have special meaning
             for orig, new in self.extra_params_remap.items():
@@ -446,7 +447,7 @@ class Sushi4Client(SushiClientBase):
             # put the rest in as it is
             kwargs.update(params)
         if self.auth:
-            kwargs['auth'] = self.auth
+            kwargs["auth"] = self.auth
 
         report_type = Sushi4Client.to_pycounter_report_type(report_type)
         report = sushi.get_report(
@@ -458,11 +459,11 @@ class Sushi4Client(SushiClientBase):
     def extract_errors_from_data(cls, report_data: typing.IO[bytes]):
         try:
             report_data.seek(0)  # set to start
-            content = report_data.read().decode('utf8', 'ignore')
+            content = report_data.read().decode("utf8", "ignore")
             parsed = xmltodict.parse(content)
         except Exception as e:
-            log = f'Exception: {e}\nTraceback: {traceback.format_exc()}'
-            return [SushiError(code='non-sushi', text=str(e), full_log=log, severity='Exception')]
+            log = f"Exception: {e}\nTraceback: {traceback.format_exc()}"
+            return [SushiError(code="non-sushi", text=str(e), full_log=log, severity="Exception")]
         else:
             errors: typing.List[SushiError] = []
             for exception in recursive_finder(parsed, ["Exception"]):
@@ -475,7 +476,7 @@ class Sushi4Client(SushiClientBase):
                 message = message.get("#text", "") if isinstance(message, dict) else message
                 severity = error_code_to_severity(code)
 
-                full_log = f'{severity}: #{code}; {message}'
+                full_log = f"{severity}: #{code}; {message}"
                 errors.append(
                     SushiError(
                         code=code,
@@ -489,10 +490,10 @@ class Sushi4Client(SushiClientBase):
             if not errors:
                 errors.append(
                     SushiError(
-                        code='non-sushi',
-                        text='Could not find Exception data in XML, probably wrong format',
-                        full_log='Could not find Exception data in XML, probably wrong format',
-                        severity='Exception',
+                        code="non-sushi",
+                        text="Could not find Exception data in XML, probably wrong format",
+                        full_log="Could not find Exception data in XML, probably wrong format",
+                        severity="Exception",
                     )
                 )
             return errors
@@ -500,6 +501,6 @@ class Sushi4Client(SushiClientBase):
     def report_to_string(self, report_data: report.CounterReport):
         lines = report_data.as_generic()
         out = StringIO()
-        writer = csv.writer(out, dialect='excel', delimiter="\t")
+        writer = csv.writer(out, dialect="excel", delimiter="\t")
         writer.writerows(lines)
         return out.getvalue()

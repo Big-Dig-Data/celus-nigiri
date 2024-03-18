@@ -5,7 +5,7 @@ from typing import List, Optional
 
 import dateparser
 
-counter_month_matcher = re.compile(r'^(?P<month>\w{3})-(?P<year>\d{2}(\d{2})?)$')
+counter_month_matcher = re.compile(r"^(?P<month>\w{3})-(?P<year>\d{2}(\d{2})?)$")
 
 
 def parse_counter_month(text: str) -> Optional[datetime.date]:
@@ -19,8 +19,8 @@ def parse_counter_month(text: str) -> Optional[datetime.date]:
         return None
     m = counter_month_matcher.match(text)
     if m:
-        year = int(m.group('year'))
-        month = m.group('month')
+        year = int(m.group("year"))
+        month = m.group("month")
         if year < 50:
             year += 2000
         elif 50 <= year < 100:
@@ -39,7 +39,7 @@ def parse_date_fuzzy(date_str: str) -> Optional[datetime.date]:
     Uses dateparser to try to parse a date. Uses only specific locales to make dateparser
     faster, so we extracted it as a function to use throughout the code
     """
-    dt = dateparser.parse(date_str, languages=['en'])
+    dt = dateparser.parse(date_str, languages=["en"])
     if not dt:
         return dt
     return dt.date()

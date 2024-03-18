@@ -12,19 +12,19 @@ from .counter5 import CounterRecord
 
 class Counter4ReportBase:
     dimensions = []  # this should be redefined in subclasses
-    allowed_item_ids = ['DOI', 'Online_ISSN', 'Print_ISSN', 'ISBN', 'Proprietary']
+    allowed_item_ids = ["DOI", "Online_ISSN", "Print_ISSN", "ISBN", "Proprietary"]
 
     dimension_to_attr = {
-        'Publisher': 'publisher',
-        'Content Provider': 'content_provider',
-        'Platform': 'platform',
+        "Publisher": "publisher",
+        "Content Provider": "content_provider",
+        "Platform": "platform",
     }
     title_id_to_attr = {
-        'Print_ISSN': 'issn',
-        'Online_ISSN': 'eissn',
-        'ISBN': 'isbn',
-        'DOI': 'doi',
-        'Proprietary': 'proprietary_id',
+        "Print_ISSN": "issn",
+        "Online_ISSN": "eissn",
+        "ISBN": "isbn",
+        "DOI": "doi",
+        "Proprietary": "proprietary_id",
     }
 
     def __init__(self):
@@ -87,36 +87,36 @@ class Counter4ReportBase:
 
 
 class Counter4JR1Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Platform']
+    dimensions = ["Publisher", "Platform"]
 
 
 class Counter4JR2Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Access Denied Category', 'Platform']
+    dimensions = ["Publisher", "Access Denied Category", "Platform"]
 
 
 class Counter4BR1Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Platform']
+    dimensions = ["Publisher", "Platform"]
 
 
 class Counter4BR2Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Platform']
+    dimensions = ["Publisher", "Platform"]
 
 
 class Counter4BR3Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Platform']
+    dimensions = ["Publisher", "Platform"]
 
 
 class Counter4DB1Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Platform']
+    dimensions = ["Publisher", "Platform"]
 
 
 class Counter4DB2Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Access Denied Category', 'Platform']
+    dimensions = ["Publisher", "Access Denied Category", "Platform"]
 
 
 class Counter4PR1Report(Counter4ReportBase):
-    dimensions = ['Publisher', 'Platform']
+    dimensions = ["Publisher", "Platform"]
 
 
 class Counter4MR1Report(Counter4ReportBase):
-    dimensions = ['Content Provider', 'Platform']
+    dimensions = ["Content Provider", "Platform"]

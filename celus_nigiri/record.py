@@ -11,7 +11,8 @@ class CounterRecord:
     # mandatory, each record should have at least a start date
     start: typing.Optional[date] = None
 
-    # Optional really, if the report is for whole month then the start date (first day of the month) suffice
+    # Optional really, if the report is for whole month
+    # then the start date (first day of the month) suffice
     end: typing.Optional[date] = None
 
     # name of the publication
@@ -60,6 +61,6 @@ class CounterRecord:
         )
 
     @classmethod
-    def empty_generator(cls) -> typing.Generator['CounterRecord', None, None]:
-        empty: typing.List['CounterRecord'] = []
+    def empty_generator(cls) -> typing.Generator["CounterRecord", None, None]:
+        empty: typing.List["CounterRecord"] = []
         return (e for e in empty)

@@ -1,6 +1,7 @@
 """
 Module dealing with data in the COUNTER5 format.
 """
+
 import csv
 import json
 import typing
@@ -34,15 +35,15 @@ class CounterError:
 
     @classmethod
     def from_sushi_dict(cls, rec):
-        severity = rec.get('Severity')
+        severity = rec.get("Severity")
         severity = (
-            severity if isinstance(severity, str) else error_code_to_severity(rec.get('Code'))
+            severity if isinstance(severity, str) else error_code_to_severity(rec.get("Code"))
         )
         return cls(
-            code=rec.get('Code'),
-            severity=rec.get('Severity'),
-            message=rec.get('Message'),
-            data=rec.get('Data'),
+            code=rec.get("Code"),
+            severity=rec.get("Severity"),
+            message=rec.get("Message"),
+            data=rec.get("Data"),
         )
 
     def to_sushi_dict(self):
@@ -61,39 +62,39 @@ class TransportError:
         self.message = message
 
     def __str__(self):
-        http = f' [HTTP {self.http_status}]' if self.http_status else ''
-        return f'Transport error{http}: {self.message}'
+        http = f" [HTTP {self.http_status}]" if self.http_status else ""
+        return f"Transport error{http}: {self.message}"
 
 
 ALLOWED_ITEM_IDS = {
-    'DR': {'Proprietary': 'Proprietary', 'Proprietary_ID': 'Proprietary'},
-    'TR': {
-        'DOI': 'DOI',
-        'Online_ISSN': 'Online_ISSN',
-        'Print_ISSN': 'Print_ISSN',
-        'ISBN': 'ISBN',
-        'Proprietary': 'Proprietary',
-        'Proprietary_ID': 'Proprietary_ID',
-        'URI': 'URI',
+    "DR": {"Proprietary": "Proprietary", "Proprietary_ID": "Proprietary"},
+    "TR": {
+        "DOI": "DOI",
+        "Online_ISSN": "Online_ISSN",
+        "Print_ISSN": "Print_ISSN",
+        "ISBN": "ISBN",
+        "Proprietary": "Proprietary",
+        "Proprietary_ID": "Proprietary_ID",
+        "URI": "URI",
     },
-    'PR': {'Proprietary': 'Proprietary', 'Proprietary_ID': 'Proprietary'},
-    'IR': {
-        'DOI': 'DOI',
-        'Online_ISSN': 'Online_ISSN',
-        'Print_ISSN': 'Print_ISSN',
-        'ISBN': 'ISBN',
-        'Proprietary': 'Proprietary',
-        'Proprietary_ID': 'Proprietary_ID',
-        'URI': 'URI',
+    "PR": {"Proprietary": "Proprietary", "Proprietary_ID": "Proprietary"},
+    "IR": {
+        "DOI": "DOI",
+        "Online_ISSN": "Online_ISSN",
+        "Print_ISSN": "Print_ISSN",
+        "ISBN": "ISBN",
+        "Proprietary": "Proprietary",
+        "Proprietary_ID": "Proprietary_ID",
+        "URI": "URI",
     },
-    'IR_M1': {
-        'DOI': 'DOI',
-        'Online_ISSN': 'Online_ISSN',
-        'Print_ISSN': 'Print_ISSN',
-        'ISBN': 'ISBN',
-        'Proprietary': 'Proprietary',
-        'Proprietary_ID': 'Proprietary_ID',
-        'URI': 'URI',
+    "IR_M1": {
+        "DOI": "DOI",
+        "Online_ISSN": "Online_ISSN",
+        "Print_ISSN": "Print_ISSN",
+        "ISBN": "ISBN",
+        "Proprietary": "Proprietary",
+        "Proprietary_ID": "Proprietary_ID",
+        "URI": "URI",
     },
 }
 
@@ -131,16 +132,16 @@ class Counter5ReportBase:
             item_ids = self._item_get_item_ids(item)
             dimension_data = self._extract_dimension_data(self.dimensions, item)
 
-            performances = item.get('Performance', [])
+            performances = item.get("Performance", [])
             for performance in performances:
-                period = performance.get('Period', {})
-                start = parse_date_fuzzy(period.get('Begin_Date'))
-                end = parse_date_fuzzy(period.get('End_Date'))
+                period = performance.get("Period", {})
+                start = parse_date_fuzzy(period.get("Begin_Date"))
+                end = parse_date_fuzzy(period.get("End_Date"))
 
-                for metric in performance.get('Instance', []):
+                for metric in performance.get("Instance", []):
                     yield CounterRecord(
-                        value=int(metric.get('Count')),
-                        metric=metric.get('Metric_Type'),
+                        value=int(metric.get("Count")),
+                        metric=metric.get("Metric_Type"),
                         start=start,
                         end=end,
                         title=title,
@@ -152,9 +153,9 @@ class Counter5ReportBase:
 
     def check_header(self, header, fd):
         lower_keys = [e.lower() for e in header]
-        for field in ['report_id', 'customer_id']:  # mandatory header fields
+        for field in ["report_id", "customer_id"]:  # mandatory header fields
             if field not in lower_keys:
-                raise SushiException('Incorrect format', content=fd.read())
+                raise SushiException("Incorrect format", content=fd.read())
 
     def check_item(self, item: dict):
         """Check whether the item is valid"""
@@ -203,7 +204,7 @@ class Counter5ReportBase:
             first_character = fd.read(1)
         fd.seek(0)
 
-        if first_character == b'[':
+        if first_character == b"[":
             # entire json can be a list of errors
             self.extract_errors(json.load(fd))
             return {}, empty_generator()
@@ -215,9 +216,9 @@ class Counter5ReportBase:
             self.extract_errors(data)
             return data, empty_generator()
 
-        elif first_character != b'{':
+        elif first_character != b"{":
             self.errors.append(
-                TransportError(http_status=self.http_status_code, message='Non SUSHI data returned')
+                TransportError(http_status=self.http_status_code, message="Non SUSHI data returned")
             )
             return {}, empty_generator()
 
@@ -257,7 +258,7 @@ class Counter5ReportBase:
                 fd.seek(0)
         elif not self.record_found:
             # Header is missing and no data
-            raise SushiException('Incorrect format', content=fd.read())
+            raise SushiException("Incorrect format", content=fd.read())
         else:
             # Header is empty, but data are present
             pass
@@ -309,22 +310,22 @@ class Counter5ReportBase:
             return []
 
     def file_to_records(self, filename: str) -> typing.Generator[CounterRecord, None, None]:
-        f = open(filename, 'rb')  # file will be closed later (once generator struct is discarded)
+        f = open(filename, "rb")  # file will be closed later (once generator struct is discarded)
         self.header, items = self.fd_to_dicts(f)
         return self.read_report(self.header, items)
 
     @classmethod
     def file_to_input(cls, filename: str):
-        with open(filename, 'r', encoding='utf-8') as infile:
+        with open(filename, "r", encoding="utf-8") as infile:
             return json.load(infile)
 
     @classmethod
     def _item_get_title(cls, item):
-        return item.get('Title')
+        return item.get("Title")
 
     @classmethod
     def _item_get_title_ids(cls, item) -> typing.Dict[str, str]:
-        return cls._extract_title_ids(item.get('Item_ID', []) or [])
+        return cls._extract_title_ids(item.get("Item_ID", []) or [])
 
     @classmethod
     def _item_get_item_ids(self, item) -> typing.Dict[str, str]:
@@ -338,8 +339,8 @@ class Counter5ReportBase:
     def _extract_title_ids(cls, values: list) -> dict:
         ret = {}
         for value in values:
-            if id_type := cls.allowed_item_ids.get(value.get('Type')):
-                ret[id_type] = value.get('Value')
+            if id_type := cls.allowed_item_ids.get(value.get("Type")):
+                ret[id_type] = value.get("Value")
         return ret
 
     @classmethod
@@ -359,29 +360,29 @@ class Counter5ReportBase:
 
 
 class Counter5DRReport(Counter5ReportBase):
-    dimensions = ['Access_Method', 'Data_Type', 'Publisher', 'Platform']
+    dimensions = ["Access_Method", "Data_Type", "Publisher", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["DR"]
 
     @classmethod
     def _item_get_title(cls, item):
-        return item.get('Database')
+        return item.get("Database")
 
 
 class Counter5TRReport(Counter5ReportBase):
     dimensions = [
-        'Access_Type',
-        'Access_Method',
-        'Data_Type',
-        'Section_Type',
-        'YOP',
-        'Publisher',
-        'Platform',
+        "Access_Type",
+        "Access_Method",
+        "Data_Type",
+        "Section_Type",
+        "YOP",
+        "Publisher",
+        "Platform",
     ]
     allowed_item_ids = ALLOWED_ITEM_IDS["TR"]
 
 
 class Counter5PRReport(Counter5ReportBase):
-    dimensions = ['Access_Method', 'Data_Type', 'Platform']
+    dimensions = ["Access_Method", "Data_Type", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["PR"]
 
     @classmethod
@@ -392,13 +393,13 @@ class Counter5PRReport(Counter5ReportBase):
 
 class Counter5IRReport(Counter5ReportBase):
     dimensions = [
-        'Access_Type',
-        'Access_Method',
-        'Data_Type',
-        'YOP',
-        'Publisher',
-        'Platform',
-        'Article_Version',
+        "Access_Type",
+        "Access_Method",
+        "Data_Type",
+        "YOP",
+        "Publisher",
+        "Platform",
+        "Article_Version",
     ]
     allowed_item_ids = ALLOWED_ITEM_IDS["IR"]
 
@@ -416,11 +417,11 @@ class Counter5IRReport(Counter5ReportBase):
 
     @classmethod
     def _item_get_title_ids(cls, item):
-        return cls._extract_title_ids(item.get("Item_Parent", {}).get('Item_ID', []) or [])
+        return cls._extract_title_ids(item.get("Item_Parent", {}).get("Item_ID", []) or [])
 
 
 class Counter5IRM1Report(Counter5IRReport):
-    dimensions = ['Publisher', 'Platform']
+    dimensions = ["Publisher", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["IR_M1"]
 
 
@@ -432,47 +433,47 @@ class Counter5TableReport:
     dimensions = []
 
     column_map = {
-        'Metric_Type': 'metric',
-        'Organization': 'organization',
-        'Database': 'title',
-        'Title': 'title',
-        'Item': 'title',
+        "Metric_Type": "metric",
+        "Organization": "organization",
+        "Database": "title",
+        "Title": "title",
+        "Item": "title",
     }
 
     report_type_to_dimensions = {
-        'DR': ['Access_Method', 'Data_Type', 'Publisher', 'Platform'],
-        'TR': [
-            'Access_Type',
-            'Access_Method',
-            'Data_Type',
-            'Section_Type',
-            'YOP',
-            'Publisher',
-            'Platform',
+        "DR": ["Access_Method", "Data_Type", "Publisher", "Platform"],
+        "TR": [
+            "Access_Type",
+            "Access_Method",
+            "Data_Type",
+            "Section_Type",
+            "YOP",
+            "Publisher",
+            "Platform",
         ],
-        'PR': ['Access_Method', 'Data_Type', 'Platform'],
-        'IR': ['Access_Type', 'Access_Method', 'Data_Type', 'YOP', 'Publisher', 'Platform'],
-        'IR_M1': ['Publisher', 'Platform'],
+        "PR": ["Access_Method", "Data_Type", "Platform"],
+        "IR": ["Access_Type", "Access_Method", "Data_Type", "YOP", "Publisher", "Platform"],
+        "IR_M1": ["Publisher", "Platform"],
     }
 
     title_id_columns = {
-        'DOI': 'DOI',
-        'ISBN': 'ISBN',
-        'Print_ISSN': 'Print_ISSN',
-        'Online_ISSN': 'Online_ISSN',
-        'Proprietary_ID': 'Proprietary',
-        'Proprietary': 'Proprietary',
-        'URI': 'URI',
+        "DOI": "DOI",
+        "ISBN": "ISBN",
+        "Print_ISSN": "Print_ISSN",
+        "Online_ISSN": "Online_ISSN",
+        "Proprietary_ID": "Proprietary",
+        "Proprietary": "Proprietary",
+        "URI": "URI",
     }
 
-    ignored_columns = ['Reporting_Period_Total', 'Publisher_ID', 'Linking_ISSN']
+    ignored_columns = ["Reporting_Period_Total", "Publisher_ID", "Linking_ISSN"]
 
     def file_to_records(self, filename: str) -> typing.Generator[CounterRecord, None, None]:
         # detect encoding
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             encoding = detect_file_encoding(f)
 
-        with open(filename, 'r', encoding=encoding) as infile:
+        with open(filename, "r", encoding=encoding) as infile:
             # detect dialect
             dialect = detect_csv_dialect(infile)
 
@@ -490,7 +491,7 @@ class Counter5TableReport:
             if not header_line or not header_line[0].strip():
                 # we break on empty line - it means end of header and start of data
                 break
-            header[header_line[0].strip()] = header_line[1].strip() if len(header_line) > 1 else ''
+            header[header_line[0].strip()] = header_line[1].strip() if len(header_line) > 1 else ""
         return header
 
     def _fd_to_records(self, infile, dialect) -> typing.Generator[CounterRecord, None, None]:
@@ -498,10 +499,10 @@ class Counter5TableReport:
         reader = csv.reader(infile, dialect=dialect)
         header = self.get_header(reader)
 
-        report_type = header.get('Report_ID')
+        report_type = header.get("Report_ID")
         if not report_type or report_type not in self.report_type_to_dimensions:
-            raise ValueError(f'Unsupported report type: {report_type}')
-        if header.get('Release') != '5':
+            raise ValueError(f"Unsupported report type: {report_type}")
+        if header.get("Release") != "5":
             raise ValueError(f'Unsupported COUNTER release: {header.get("Release")}')
 
         # we continue reading using a dict reader
@@ -535,7 +536,9 @@ class Counter5TableReport:
 
             self.check_title_ids(report_type, title_ids)
 
-            # we put initial data into the data we read - these are usually dimensions that are fixed
+            # we put initial data into the data we read
+            # - these are usually dimensions that are fixed
+            #
             # for the whole import and are not part of the data itself
             # for key, value in initial_data.items():
             #     if key not in implicit_dimensions:

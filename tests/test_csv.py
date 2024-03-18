@@ -14,7 +14,7 @@ from celus_nigiri.csv_detect import detect_csv_dialect, detect_file_encoding
     ),
 )
 def test_dialect(path, encoding, dialect):
-    path = Path(__file__).parent / 'data' / path
+    path = Path(__file__).parent / "data" / path
     with path.open("rb") as f:
         detected_encoding = detect_file_encoding(f)
         assert detected_encoding == encoding

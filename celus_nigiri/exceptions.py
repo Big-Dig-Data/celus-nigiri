@@ -4,4 +4,4 @@ class SushiException(Exception):
         self.content = content
 
     def __str__(self):
-        return 'Sushi exception: {}'.format(self.text)
+        return "Sushi exception: {}".format(self.text)

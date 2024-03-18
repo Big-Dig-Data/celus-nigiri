@@ -6,7 +6,7 @@ from collections import Counter
 
 from chardet.universaldetector import UniversalDetector
 
-DEFAULT_ENCODING = 'utf-8-sig'
+DEFAULT_ENCODING = "utf-8-sig"
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +32,8 @@ def detect_file_encoding(
             if detector.done:
                 break
         detector.close()
-        if detector.result['confidence'] >= min_confidence:
-            encoding = detector.result['encoding']
+        if detector.result["confidence"] >= min_confidence:
+            encoding = detector.result["encoding"]
     except TypeError:
         logger.warn("File provided for encoding detection is not opened in binary mode!")
     finally:
@@ -53,7 +53,7 @@ def detect_csv_dialect(file: typing.IO[str], max_lines: typing.Optional[int] = 2
     scores = sorted(histograms, key=lambda x: histogram_score(x[0]), reverse=True)
     winner = scores[0][1]
 
-    if name := getattr(file, 'name', None):
+    if name := getattr(file, "name", None):
         logger.debug("The best dialect for the file '%s' is '%s'", name, winner)
     else:
         logger.debug("The best dialect is '%s'", winner)
