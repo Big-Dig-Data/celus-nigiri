@@ -238,6 +238,22 @@ class Sushi5Client(SushiClientBase):
         reports = self.report_to_data(content)
         return reports
 
+    def make_download_url(self, report_type):
+        """
+        Prepare download url of a sushi server
+        """
+        report_type = self._check_report_type(report_type)
+        return "/".join([self.url.rstrip("/"), "reports", report_type])
+
+    def make_download_params(self, extra_params, begin_date, end_date):
+        """
+        Prepare download params which are used to query sushi server
+        """
+        params = self._construct_url_params(extra=extra_params)
+        params["begin_date"] = self._encode_date(begin_date)
+        params["end_date"] = self._encode_date(end_date)
+        return params
+
     def fetch_report_data(
         self,
         report_type,
@@ -256,11 +272,8 @@ class Sushi5Client(SushiClientBase):
         :param params:
         :return:
         """
-        report_type = self._check_report_type(report_type)
-        url = "/".join([self.url.rstrip("/"), "reports", report_type])
-        params = self._construct_url_params(extra=params)
-        params["begin_date"] = self._encode_date(begin_date)
-        params["end_date"] = self._encode_date(end_date)
+        url = self.make_download_url(report_type)
+        params = self.make_download_params(params, begin_date, end_date)
         response = self._make_request(url, params, stream=bool(dump_file))
         if dump_file is not None:
             for data in response.iter_content(1024 * 1024):
