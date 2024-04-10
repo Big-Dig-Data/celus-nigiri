@@ -400,6 +400,7 @@ class Counter5IRReport(Counter5ReportBase):
         "Publisher",
         "Platform",
         "Article_Version",
+        "Parent_Data_Type",
     ]
     allowed_item_ids = ALLOWED_ITEM_IDS["IR"]
 
@@ -418,6 +419,14 @@ class Counter5IRReport(Counter5ReportBase):
     @classmethod
     def _item_get_title_ids(cls, item):
         return cls._extract_title_ids(item.get("Item_Parent", {}).get("Item_ID", []) or [])
+
+    @classmethod
+    def _extract_dimension_data(cls, dimensions: list, record: dict):
+        res = super()._extract_dimension_data(dimensions, record)
+        # enrich result with Parent_Data_Type => it can be useful during processing
+        if parent_data_type := record.get("Item_Parent", {}).get("Data_Type"):
+            res["Parent_Data_Type"] = parent_data_type
+        return res
 
 
 class Counter5IRM1Report(Counter5IRReport):
