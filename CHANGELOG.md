@@ -6,31 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.2.0] - 2024-05-10
+
+### Added
+- autofill Counter5ReportBase.header in Counter5ReportBase.fd_to_dicts function
+
+
 ## [2.1.0] - 2024-04-16
 
 ### Added
-* Parent_Data_Type dimension for IR reports
-* make_download_url and make_download_params functions for Sushi5Client
+- Parent_Data_Type dimension for IR reports
+- make_download_url and make_download_params functions for Sushi5Client
 
 
 ## [2.0.0] - 2024-03-18
 
 ### Added
-* cli application to download reports
-* get_months function for C5 json, C5 tabular and celus formats
-* support to process and download IR report
+- cli application to download reports
+- get_months function for C5 json, C5 tabular and celus formats
+- support to process and download IR report
 
 ### Changed
-* structure of CounterRecord (added item and item_ids)
+- structure of CounterRecord (added item and item_ids)
 
 
 ## [1.3.3] - 2023-11-13
 
 ### Fixed
-* fix crash when some item in C5 report does not have Performance key
+- fix crash when some item in C5 report does not have Performance key
 
 ### Changed
-* use celus-pycounter instead of pycounter
+- use celus-pycounter instead of pycounter
 
 ## [1.3.1] - 2023-06-05
 
