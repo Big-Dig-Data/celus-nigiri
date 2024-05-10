@@ -5,13 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.4.0] - 2024-05-10
+
+### Added
+- autofill Counter5ReportBase.header in Counter5ReportBase.fd_to_dicts function
+
+
 ## [1.3.3] - 2023-11-13
 
 ### Fixed
-* fix crash when some item in C5 report does not have Performance key
+- fix crash when some item in C5 report does not have Performance key
 
 ### Changed
-* use celus-pycounter instead of pycounter
+- use celus-pycounter instead of pycounter
+
 
 ## [1.3.1] - 2023-06-05
 
