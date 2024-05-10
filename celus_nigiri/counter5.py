@@ -5,6 +5,7 @@ Module dealing with data in the COUNTER5 format.
 import csv
 import json
 import typing
+from copy import deepcopy
 from datetime import date
 
 import ijson.backends.yajl2_c as ijson
@@ -256,6 +257,7 @@ class Counter5ReportBase:
                 # no  error/warning/info = > file has to contain a valid header
                 self.check_header(header, fd)
                 fd.seek(0)
+            self.header = deepcopy(header)
         elif not self.record_found:
             # Header is missing and no data
             raise SushiException("Incorrect format", content=fd.read())
@@ -311,8 +313,8 @@ class Counter5ReportBase:
 
     def file_to_records(self, filename: str) -> typing.Generator[CounterRecord, None, None]:
         f = open(filename, "rb")  # file will be closed later (once generator struct is discarded)
-        self.header, items = self.fd_to_dicts(f)
-        return self.read_report(self.header, items)
+        header, items = self.fd_to_dicts(f)
+        return self.read_report(header, items)
 
     @classmethod
     def file_to_input(cls, filename: str):
