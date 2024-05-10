@@ -215,6 +215,8 @@ class Counter5ReportBase:
             json_string = json.load(fd)
             data = json.loads(json_string)
             self.extract_errors(data)
+            header = data.get("Report_Header", {})
+            self.header = deepcopy(header)
             return data, empty_generator()
 
         elif first_character != b"{":
