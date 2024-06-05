@@ -133,11 +133,17 @@ class Sushi5Client(SushiClientBase):
         },
         "dr": {
             "name": "Database report",
-            "subreports": {"d1": "Search and Item usage", "d2": "Database Access Denied"},
+            "subreports": {
+                "d1": "Search and Item usage",
+                "d2": "Database Access Denied",
+            },
         },
         "ir": {
             "name": "Item report",
-            "subreports": {"a1": "Journal article requests", "m1": "Multimedia item requests"},
+            "subreports": {
+                "a1": "Journal article requests",
+                "m1": "Multimedia item requests",
+            },
         },
         "pr": {"name": "Platform report", "subreports": {"p1": "View by Metric_Type"}},
     }
@@ -147,7 +153,10 @@ class Sushi5Client(SushiClientBase):
         # split data in TR report to most possible dimensions for most granular data
         "maximum_split": {
             "tr": {"attributes_to_show": "YOP|Access_Method|Access_Type|Data_Type|Section_Type"},
-            "ir": {"attributes_to_show": "YOP|Access_Method|Access_Type|Data_Type|Article_Version"},
+            "ir": {
+                "attributes_to_show": "Authors|Publication_Date|YOP|Access_Method"
+                "|Access_Type|Data_Type|Article_Version"
+            },
             "pr": {"attributes_to_show": "Access_Method|Data_Type"},
             "dr": {"attributes_to_show": "Access_Method|Data_Type"},
         },
@@ -174,7 +183,9 @@ class Sushi5Client(SushiClientBase):
     def _get_proxy(self, url):
         parsed = urlparse(url)
         proxy_settings = config(
-            "SUSHI_PROXIES", cast=Csv(cast=Csv(post_process=tuple), delimiter=";"), default=""
+            "SUSHI_PROXIES",
+            cast=Csv(cast=Csv(post_process=tuple), delimiter=";"),
+            default="",
         )
         for rec in proxy_settings:
             if len(rec) != 5:
@@ -347,7 +358,8 @@ class Sushi5Client(SushiClientBase):
         # log warnings
         for warning in warnings:
             logging.warning(
-                "Warning Exception in report: %s", cls._format_error(warning.to_sushi_dict())
+                "Warning Exception in report: %s",
+                cls._format_error(warning.to_sushi_dict()),
             )
 
     @classmethod
@@ -396,7 +408,12 @@ class Sushi5Client(SushiClientBase):
             message += f"; {data}"
 
         error = SushiError(
-            code=code, text=text, full_log=message, severity=severity, raw_data=exc, data=data
+            code=code,
+            text=text,
+            full_log=message,
+            severity=severity,
+            raw_data=exc,
+            data=data,
         )
         return error
 
@@ -464,7 +481,12 @@ class Sushi4Client(SushiClientBase):
 
         report_type = Sushi4Client.to_pycounter_report_type(report_type)
         report = sushi.get_report(
-            self.url, begin_date, end_date, report=report_type, dump_file=output_content, **kwargs
+            self.url,
+            begin_date,
+            end_date,
+            report=report_type,
+            dump_file=output_content,
+            **kwargs,
         )
         return report
 

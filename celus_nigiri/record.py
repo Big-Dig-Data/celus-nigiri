@@ -2,7 +2,44 @@ import typing
 from dataclasses import dataclass, field
 from datetime import date
 
-IDS = ["DOI", "ISBN", "Print_ISSN", "Online_ISSN", "Proprietary", "URI"]
+IDS = [
+    "DOI",
+    "ISBN",
+    "Print_ISSN",
+    "Online_ISSN",
+    "Proprietary",
+    "URI",
+    "authors",
+    "publication_date",
+]
+
+
+@dataclass(init=False)
+class Author:
+    name: str
+    ISNI: typing.Optional[str]
+    ORCID: typing.Optional[str]
+
+    __slots__ = ["name", "ISNI", "ORCID"]
+
+    def __init__(
+        self,
+        name: str,
+        ISNI: typing.Optional[str] = None,
+        ORCID: typing.Optional[str] = None,
+    ):
+        self.name = name
+        self.ISNI = ISNI
+        self.ORCID = ORCID
+
+    def as_csv(self):
+        ids = []
+        if self.ISNI is not None:
+            ids.append(f"ISNI:{self.ISNI}")
+        if self.ORCID is not None:
+            ids.append(f"ORCID:{self.ORCID}")
+
+        return f"{self.name} ({';'.join(ids)})"
 
 
 # TODO since python3.10 there is `slot=True` attr which can really
@@ -56,7 +93,7 @@ class TitleIds:
         else:
             raise KeyError(item)
 
-    def __setitem__(self, key: str, value: typing.Optional[str]):
+    def __setitem__(self, key: str, value: typing.Optional[typing.Any]):
         if not hasattr(self, key):
             raise KeyError(key)
         setattr(self, key, value)
@@ -92,6 +129,12 @@ class CounterRecord:
     # ISBN (books), ISSN (periodics), EISSN (same thing only for electronic version of publications)
     item_ids: typing.Dict[str, str] = field(default_factory=dict)
 
+    # When was the item published
+    item_publication_date: typing.Optional[str] = None
+
+    # Who it the author of an item
+    item_authors: typing.Optional[typing.List[Author]] = None
+
     # contains more details
     dimension_data: typing.Dict[str, str] = field(default_factory=dict)
 
@@ -102,7 +145,7 @@ class CounterRecord:
     organization: typing.Optional[str] = None
 
     def as_csv(self) -> typing.Tuple[str, ...]:
-        def serialize_dict(mapping: typing.Optional[dict]) -> str:
+        def serialize_dict(mapping: typing.Optional[typing.Union[dict, TitleIds]]) -> str:
             if not mapping:
                 return ""
             return "|".join(f"{k}:{mapping[k]}" for k in sorted(mapping.keys()))
@@ -112,6 +155,8 @@ class CounterRecord:
                 return ""
             return date_obj.strftime("%Y-%m-%d")
 
+        authors = "|".join(e.as_csv() for e in (self.item_authors or []))
+
         return (
             format_date(self.start),
             format_date(self.end),
@@ -120,6 +165,8 @@ class CounterRecord:
             serialize_dict(self.title_ids),
             self.item or "",
             serialize_dict(self.item_ids),
+            self.item_publication_date or "",
+            authors,
             serialize_dict(self.dimension_data),
             self.metric or "",
             str(self.value),

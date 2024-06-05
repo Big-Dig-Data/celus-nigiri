@@ -20,7 +20,7 @@
     "Report_Attributes": [
       {
         "Name": "Attributes_To_Show",
-        "Value": "YOP|Access_Method|Access_Type|Data_Type|Article_Version"
+        "Value": "Authors|Publication_Date|YOP|Access_Method|Access_Type|Data_Type|Article_Version"
       },
       {
         "Name": "Include_Parent_Details",
@@ -53,6 +53,19 @@
         {
           "Type": "Article_Version",
           "Value": "VoR"
+        }
+      ],
+      "Item_Contributors": [
+        {
+          "Type": "Author",
+          "Name": "Author1",
+          "Identifier": "ORCID:0000-0000-0000-0000"
+        }
+      ],
+      "Item_Dates": [
+        {
+          "Type": "Publication_Date",
+          "Value": "2020-01-01"
         }
       ],
       "Platform": "Platform1",
@@ -138,6 +151,19 @@
           "Value": "VoR"
         }
       ],
+      "Item_Contributors": [
+        {
+          "Type": "Author",
+          "Name": "Author2",
+          "Identifier": "ISNI:1234567891234567"
+        }
+      ],
+      "Item_Dates": [
+        {
+          "Type": "Publication_Date",
+          "Value": "2021-01-01"
+        }
+      ],
       "Platform": "Platform1",
       "Publisher": "MyPublisher",
       "Publisher_ID": [
@@ -219,6 +245,19 @@
         {
           "Type": "Article_Version",
           "Value": "VoR"
+        }
+      ],
+      "Item_Contributors": [
+        {
+          "Type": "Author",
+          "Name": "Author2",
+          "Identifier": "ISNI:1234567891234567"
+        }
+      ],
+      "Item_Dates": [
+        {
+          "Type": "Publication_Date",
+          "Value": "2021-01-01"
         }
       ],
       "Platform": "Platform2",

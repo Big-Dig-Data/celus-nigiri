@@ -14,7 +14,7 @@ from .celus import get_months as celus_format_get_months
 from .csv_detect import detect_csv_dialect, detect_file_encoding
 from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
-from .record import CounterRecord
+from .record import Author, CounterRecord
 from .utils import get_date_range, parse_counter_month, parse_date_fuzzy
 
 
@@ -131,6 +131,8 @@ class Counter5ReportBase:
             title_ids = self._item_get_title_ids(item)
             item_name = self._item_get_item(item)
             item_ids = self._item_get_item_ids(item)
+            item_publication_date = self._item_get_publication_date(item)
+            item_authors = self._item_get_authors(item)
             dimension_data = self._extract_dimension_data(self.dimensions, item)
 
             performances = item.get("Performance", [])
@@ -149,6 +151,8 @@ class Counter5ReportBase:
                         title_ids=title_ids,
                         item=item_name,
                         item_ids=item_ids,
+                        item_publication_date=item_publication_date,
+                        item_authors=item_authors,
                         dimension_data=dimension_data,
                     )
 
@@ -332,8 +336,16 @@ class Counter5ReportBase:
         return cls._extract_title_ids(item.get("Item_ID", []) or [])
 
     @classmethod
-    def _item_get_item_ids(self, item) -> typing.Dict[str, str]:
+    def _item_get_item_ids(cls, item) -> typing.Dict[str, str]:
         return {}
+
+    @classmethod
+    def _item_get_publication_date(cls, item) -> typing.Optional[str]:
+        return None
+
+    @classmethod
+    def _item_get_authors(cls, item) -> typing.Optional[typing.List[Author]]:
+        return None
 
     @classmethod
     def _item_get_item(self, item) -> typing.Optional[str]:
@@ -417,6 +429,33 @@ class Counter5IRReport(Counter5ReportBase):
         return item.get("Item", "")
 
     @classmethod
+    def _item_get_authors(cls, item) -> typing.Optional[typing.List[Author]]:
+        res = []
+        if contributors := item.get("Item_Contributors"):
+            for contributor in contributors:
+                if contributor["Type"] == "Author":
+                    if name := contributor["Name"]:
+                        if identifier := contributor["Identifier"]:
+                            kind, *rest = identifier.split(":", 1)
+                            if kind == "ISNI":
+                                res.append(Author(name=name, ISNI=(rest or [""])[0]))
+                            elif kind == "ORCID":
+                                res.append(Author(name=name, ORCID=(rest or [""])[0]))
+                            else:
+                                res.append(Author(name=name))
+                        else:
+                            res.append(Author(name=name))
+        return res or None
+
+    @classmethod
+    def _item_get_publication_date(cls, item) -> typing.Optional[str]:
+        if item_dates := item.get("Item_Dates"):
+            for item_date in item_dates:
+                if item_date.get("Type") == "Publication_Date":
+                    return item_date.get("Value", "") or ""
+        return None
+
+    @classmethod
     def _item_get_item_ids(cls, item):
         return cls._extract_title_ids(item.get("Item_ID", []) or [])
 
@@ -465,7 +504,14 @@ class Counter5TableReport:
             "Platform",
         ],
         "PR": ["Access_Method", "Data_Type", "Platform"],
-        "IR": ["Access_Type", "Access_Method", "Data_Type", "YOP", "Publisher", "Platform"],
+        "IR": [
+            "Access_Type",
+            "Access_Method",
+            "Data_Type",
+            "YOP",
+            "Publisher",
+            "Platform",
+        ],
         "IR_M1": ["Publisher", "Platform"],
     }
 
