@@ -9,8 +9,6 @@ IDS = [
     "Online_ISSN",
     "Proprietary",
     "URI",
-    "authors",
-    "publication_date",
 ]
 
 
@@ -45,9 +43,8 @@ class Author:
 # TODO since python3.10 there is `slot=True` attr which can really
 # make this simpler (no need to override init anymore and define __slots__)
 @dataclass(init=False)
-class TitleIds:
-    """Wrapper around title ids
-
+class Identifiers:
+    """
     Because of dataclass it should have constant memory footprint and
     memory consumption should be lower as well when it contains at last one item
     compared to ordinary dict.
@@ -73,6 +70,8 @@ class TitleIds:
         Proprietary: typing.Optional[str] = None,
         URI: typing.Optional[str] = None,
     ):
+        # Need to use parent's __setattr__
+        # otherwise ImmutableIdentifiers would raise and exception here
         self.DOI = DOI
         self.ISBN = ISBN
         self.Print_ISSN = Print_ISSN
@@ -98,11 +97,28 @@ class TitleIds:
             raise KeyError(key)
         setattr(self, key, value)
 
+    def __bool__(self):
+        # at least one field set
+        return bool(
+            self.DOI
+            or self.ISBN
+            or self.Print_ISSN
+            or self.Online_ISSN
+            or self.Proprietary
+            or self.URI
+        )
+
     def items(self):
         return [(k, getattr(self, k)) for k in self.keys()]
 
     def keys(self):
         return [e for e in IDS if getattr(self, e, None) is not None]
+
+    def __eq__(self, other):
+        if isinstance(other, Identifiers):
+            return all(getattr(self, e) == getattr(other, e) for e in IDS)
+        elif isinstance(other, dict):
+            return other == {e: self[e] for e in IDS if getattr(self, e, None)}
 
 
 @dataclass
@@ -121,13 +137,13 @@ class CounterRecord:
     title: typing.Optional[str] = None
 
     # ISBN (books), ISSN (periodics), EISSN (same thing only for electronic version of publications)
-    title_ids: TitleIds = field(default_factory=TitleIds)
+    title_ids: Identifiers = field(default_factory=Identifiers)
 
     # name of item
     item: typing.Optional[str] = None
 
     # ISBN (books), ISSN (periodics), EISSN (same thing only for electronic version of publications)
-    item_ids: typing.Dict[str, str] = field(default_factory=dict)
+    item_ids: Identifiers = field(default_factory=Identifiers)
 
     # When was the item published
     item_publication_date: typing.Optional[str] = None
@@ -144,8 +160,15 @@ class CounterRecord:
     # Entity to which are these data related
     organization: typing.Optional[str] = None
 
+    def __post_init__(self):
+        # Try to convert dict in title_ids and item_ids to Identifiers
+        if isinstance(self.item_ids, dict):
+            self.item_ids = Identifiers(**self.item_ids)
+        if isinstance(self.title_ids, dict):
+            self.title_ids = Identifiers(**self.title_ids)
+
     def as_csv(self) -> typing.Tuple[str, ...]:
-        def serialize_dict(mapping: typing.Optional[typing.Union[dict, TitleIds]]) -> str:
+        def serialize_dict(mapping: typing.Optional[typing.Union[dict, Identifiers]]) -> str:
             if not mapping:
                 return ""
             return "|".join(f"{k}:{mapping[k]}" for k in sorted(mapping.keys()))
