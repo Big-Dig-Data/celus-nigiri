@@ -435,7 +435,7 @@ class Counter5IRReport(Counter5ReportBase):
             for contributor in contributors:
                 if contributor["Type"] == "Author":
                     if name := contributor["Name"]:
-                        if identifier := contributor["Identifier"]:
+                        if identifier := contributor.get("Identifier"):
                             kind, *rest = identifier.split(":", 1)
                             if kind == "ISNI":
                                 res.append(Author(name=name, ISNI=(rest or [""])[0]))
