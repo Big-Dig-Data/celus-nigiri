@@ -1,6 +1,6 @@
 import pytest
 
-from celus_nigiri.record import Identifiers
+from celus_nigiri.record import Author, Identifiers
 
 
 @pytest.fixture
@@ -128,3 +128,18 @@ def test_identifiers_eq(empty_identifiers, full_identifiers):
         "Proprietary": "Proprietary1",
         "URI": "https://example.org",
     } == full_identifiers
+
+
+@pytest.mark.parametrize(
+    "name,normalized_name",
+    (
+        ("AAA BBB", "AAA BBB"),
+        (" AAA BBB", "AAA BBB"),
+        ("AAA BBB ", "AAA BBB"),
+        ("AAA  BBB", "AAA BBB"),
+        (" AAA  BBB ", "AAA BBB"),
+    ),
+)
+def test_author_name_noramalization(name, normalized_name):
+    author = Author(name=name)
+    assert author.name == normalized_name

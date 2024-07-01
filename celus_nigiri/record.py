@@ -1,3 +1,4 @@
+import re
 import typing
 from dataclasses import dataclass, field
 from datetime import date
@@ -26,7 +27,7 @@ class Author:
         ISNI: typing.Optional[str] = None,
         ORCID: typing.Optional[str] = None,
     ):
-        self.name = name
+        self.name = re.sub(r"\s+", " ", name).strip()
         self.ISNI = ISNI
         self.ORCID = ORCID
 
