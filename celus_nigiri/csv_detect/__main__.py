@@ -6,9 +6,21 @@ from . import csv_line_length_histogram, detect_csv_dialect, detect_file_encodin
 
 
 def main():
-    for path in itertools.chain(
-        pathlib.Path(sys.argv[1]).glob("**/*.csv"), pathlib.Path(sys.argv[1]).glob("**/*.tsv")
-    ):
+    root_path = pathlib.Path(sys.argv[1])
+
+    paths = []
+    if root_path.is_dir():
+        paths = list(
+            itertools.chain(
+                root_path.glob("**/*.csv"),
+                root_path.glob("**/*.tsv"),
+            )
+        )
+    elif root_path.is_file():
+        if root_path.suffix.lower() in [".tsv", ".csv"]:
+            paths = [root_path]
+
+    for path in paths:
         with path.open("rb") as f:
             encoding = detect_file_encoding(f)
 
