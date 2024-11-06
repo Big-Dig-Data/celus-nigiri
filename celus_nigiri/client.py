@@ -4,7 +4,7 @@ import logging
 import traceback
 import typing
 import urllib
-from io import BytesIO, StringIO
+from io import StringIO
 from urllib.parse import urlparse
 
 import requests
@@ -21,6 +21,13 @@ from .counter5 import (
     Counter5ReportBase,
     Counter5TRReport,
     CounterError,
+)
+from .counter51 import (
+    Counter51DRReport,
+    Counter51IRReport,
+    Counter51PRReport,
+    Counter51ReportBase,
+    Counter51TRReport,
 )
 from .error_codes import error_code_to_severity
 from .exceptions import SushiException
@@ -233,22 +240,6 @@ class Sushi5Client(SushiClientBase):
             kwargs["auth"] = self.auth
         return self.session.get(url, params=params, stream=stream, **kwargs)
 
-    def get_available_reports_raw(self, params=None) -> bytes:
-        """
-        Return a list of available reports
-        :return:
-        """
-        url = "/".join([self.url.rstrip("/"), "reports/"])
-        params = self._construct_url_params(extra=params)
-        response = self._make_request(url, params)
-        response.raise_for_status()
-        return response.content
-
-    def get_available_reports(self, params=None) -> typing.Generator[dict, None, None]:
-        content = self.get_available_reports_raw(params=params)
-        reports = self.report_to_data(content)
-        return reports
-
     def make_download_url(self, report_type):
         """
         Prepare download url of a sushi server
@@ -327,17 +318,6 @@ class Sushi5Client(SushiClientBase):
             return report_class(output_content, http_status_code=response.status_code)
         # for other response codes we raise an error - it should be only exotic ones
         response.raise_for_status()
-
-    def report_to_data(self, report: bytes, validate=True) -> typing.Generator[dict, None, None]:
-        try:
-            fd = BytesIO(report)
-            counter_report = Counter5ReportBase()
-            header, data = counter_report.fd_to_dicts(fd)
-        except ValueError as e:
-            raise SushiException(str(e), content=report)
-        if validate:
-            self.validate_data(counter_report.errors, counter_report.warnings)
-        return data
 
     @classmethod
     def validate_data(cls, errors: typing.List[CounterError], warnings: typing.List[CounterError]):
@@ -432,6 +412,53 @@ class Sushi5Client(SushiClientBase):
 
     def report_to_string(self, report_data):
         return json.dumps(report_data, ensure_ascii=False, indent=2)
+
+
+class Sushi51Client(Sushi5Client):
+    """
+    Client for SUSHI and COUNTER 5.1 protocol
+    """
+
+    def make_download_url(self, report_type):
+        """
+        Prepare download url of a sushi server
+        """
+        report_type = self._check_report_type(report_type)
+        return "/".join([self.url.rstrip("/"), "r51/reports", report_type])
+
+    def get_report_data(
+        self,
+        report_type,
+        begin_date,
+        end_date,
+        output_content: typing.Optional[typing.IO] = None,
+        params=None,
+    ) -> Counter51ReportBase:
+        response = self.fetch_report_data(
+            report_type, begin_date, end_date, params=params, dump_file=output_content
+        )
+        if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
+            # status codes in the 4xx range may be OK and just provide additional signal
+            # about an issue - we need to parse the result in case there is more info
+            # in the body
+            report_class: typing.Type[Counter51ReportBase]
+            report_id = report_type.lower()
+            if report_id == "tr":
+                report_class = Counter51TRReport
+            elif report_id == "dr":
+                report_class = Counter51DRReport
+            elif report_id == "pr":
+                report_class = Counter51PRReport
+            elif report_id == "ir":
+                report_class = Counter51IRReport
+            else:
+                raise NotImplementedError()
+
+            if output_content:
+                output_content.seek(0)
+            return report_class(output_content, http_status_code=response.status_code)
+        # for other response codes we raise an error - it should be only exotic ones
+        response.raise_for_status()
 
 
 class Sushi4Client(SushiClientBase):
