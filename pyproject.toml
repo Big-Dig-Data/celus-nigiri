@@ -28,7 +28,7 @@ testpaths = "tests/"
 
 [tool.poetry]
 name = "celus-nigiri"
-version = "3.0.2"
+version = "3.1.0"
 description = "Library for downloading and parsing counter-like data."
 authors = ["Beda Kosata <beda@bigdigdata.com>", "Stepan Henek <stepan@bigdigdata.com>"]
 license = "MIT"
