@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from celus_nigiri.utils import parse_counter_month
+from celus_nigiri.utils import get_date_range, parse_counter_month
 
 
 @pytest.mark.parametrize(
@@ -19,3 +19,21 @@ from celus_nigiri.utils import parse_counter_month
 )
 def test_parse_counter_month(text, output):
     assert parse_counter_month(text) == output
+
+
+@pytest.mark.parametrize(
+    ["begin", "end", "months"],
+    [
+        (date(2020, 1, 1), date(2019, 12, 1), []),
+        (date(2020, 1, 1), date(2020, 1, 1), [date(2020, 1, 1)]),
+        (date(2020, 1, 1), date(2020, 2, 1), [date(2020, 1, 1), date(2020, 2, 1)]),
+        (date(2020, 1, 1), date(2020, 12, 1), [date(2020, i, 1) for i in range(1, 13)]),
+        (
+            date(2020, 1, 1),
+            date(2021, 12, 1),
+            [*(date(2020, i, 1) for i in range(1, 13)), *(date(2021, i, 1) for i in range(1, 13))],
+        ),
+    ],
+)
+def test_get_date_range(begin, end, months):
+    assert get_date_range(begin, end) == months

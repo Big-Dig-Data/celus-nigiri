@@ -47,9 +47,10 @@ def parse_date_fuzzy(date_str: str) -> Optional[datetime.date]:
 
 def get_date_range(start_date: datetime.date, end_date: datetime.date) -> List[datetime.date]:
     months = []
+    start_date = start_date.replace(day=1)
     while start_date <= end_date:
-        start_date = start_date.replace(day=1)
         months.append(start_date)
         start_date = start_date + datetime.timedelta(days=45)
+        start_date = start_date.replace(day=1)
 
     return months
