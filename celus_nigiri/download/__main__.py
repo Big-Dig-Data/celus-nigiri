@@ -1,26 +1,11 @@
 import argparse
-import enum
 import logging
 import sys
 import typing
 from copy import deepcopy
 from datetime import date, datetime
 
-from celus_nigiri.client import Sushi5Client, Sushi51Client, SushiClientBase
-
-
-class CounterVersion(str, enum.Enum):
-    C5 = "5"
-    C51 = "51"
-
-    @property
-    def sushi_client_class(self) -> typing.Type[SushiClientBase]:
-        if self == CounterVersion.C5:
-            return Sushi5Client
-        elif self == CounterVersion.C51:
-            return Sushi51Client
-        else:
-            raise NotImplementedError()
+from celus_nigiri.client import CounterVersion, Sushi5Client
 
 
 def parse_date(date_str) -> date:
@@ -57,14 +42,8 @@ def main():
     parser.add_argument("url", metavar="URL", nargs=1, help="Base URL")
     args = parser.parse_args()
 
-    extra_params = deepcopy(
-        args.counter_version.sushi_client_class.EXTRA_PARAMS["maximum_split"].get(
-            args.report_type, {}
-        )
-    )
-    extra_params.update(
-        args.counter_version.sushi_client_class.EXTRA_PARAMS["filters"].get(args.report_type, {})
-    )
+    extra_params = deepcopy(args.counter_version.get_report_class(args.report_type).extra_params)
+
     if args.api_key:
         extra_params["api_key"] = args.api_key
 

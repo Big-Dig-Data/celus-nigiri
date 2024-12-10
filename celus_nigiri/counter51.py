@@ -19,6 +19,8 @@ from .utils import get_date_range, parse_date_fuzzy
 
 
 class Counter51ReportBase(metaclass=ABCMeta):
+    extra_params: typing.Dict[str, str] = {}
+
     @property
     @abstractmethod
     def dimensions(self) -> typing.List[str]:
@@ -293,6 +295,7 @@ class Counter51ReportBase(metaclass=ABCMeta):
 
 
 class Counter51DRReport(Counter51ReportBase):
+    extra_params: typing.Dict[str, str] = {"attributes_to_show": "Access_Method"}
     dimensions = ["Access_Method", "Data_Type", "Publisher", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["DR"]
 
@@ -302,6 +305,9 @@ class Counter51DRReport(Counter51ReportBase):
 
 
 class Counter51TRReport(Counter51ReportBase):
+    extra_params: typing.Dict[str, str] = {
+        "attributes_to_show": "YOP|Access_Method|Access_Type|Section_Type",
+    }
     dimensions = [
         "Access_Type",
         "Access_Method",
@@ -315,11 +321,17 @@ class Counter51TRReport(Counter51ReportBase):
 
 
 class Counter51PRReport(Counter51ReportBase):
+    extra_params: typing.Dict[str, str] = {"attributes_to_show": "Access_Method"}
     dimensions = ["Access_Method", "Data_Type", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["PR"]
 
 
 class Counter51IRReport(Counter51ReportBase):
+    extra_params: typing.Dict[str, str] = {
+        "attributes_to_show": "Authors|Publication_Date|YOP|Access_Method"
+        "|Access_Type|Article_Version",
+        "include_parent_details": True,
+    }
     dimensions = [
         "Access_Type",
         "Access_Method",

@@ -1,4 +1,5 @@
 import csv
+import enum
 import json
 import logging
 import traceback
@@ -117,6 +118,50 @@ class SushiClientBase:
         raise NotImplementedError()
 
 
+class CounterVersion(str, enum.Enum):
+    C5 = "5"
+    C51 = "51"
+
+    @property
+    def sushi_client_class(self) -> typing.Type[SushiClientBase]:
+        if self == CounterVersion.C5:
+            return Sushi5Client
+        elif self == CounterVersion.C51:
+            return Sushi51Client
+        else:
+            raise NotImplementedError()
+
+    def get_report_class(
+        self, report_type: str
+    ) -> typing.Union[Counter5ReportBase, Counter51ReportBase]:
+        report_type = report_type.lower()
+        if self == CounterVersion.C51:
+            if report_type == "tr":
+                report_class = Counter51TRReport
+            elif report_type == "dr":
+                report_class = Counter51DRReport
+            elif report_type == "pr":
+                report_class = Counter51PRReport
+            elif report_type == "ir":
+                report_class = Counter51IRReport
+            else:
+                raise NotImplementedError()
+        elif self == CounterVersion.C5:
+            if report_type == "tr":
+                report_class = Counter5TRReport
+            elif report_type == "dr":
+                report_class = Counter5DRReport
+            elif report_type == "pr":
+                report_class = Counter5PRReport
+            elif report_type == "ir":
+                report_class = Counter5IRReport
+            elif report_type == "ir_m1":
+                report_class = Counter5IRM1Report
+            else:
+                raise NotImplementedError()
+        return report_class
+
+
 class Sushi5Client(SushiClientBase):
     """
     Client for SUSHI and COUNTER 5 protocol
@@ -153,21 +198,6 @@ class Sushi5Client(SushiClientBase):
             },
         },
         "pr": {"name": "Platform report", "subreports": {"p1": "View by Metric_Type"}},
-    }
-
-    # sets of additional parameters for specific setups
-    EXTRA_PARAMS = {
-        # split data in TR report to most possible dimensions for most granular data
-        "maximum_split": {
-            "tr": {"attributes_to_show": "YOP|Access_Method|Access_Type|Data_Type|Section_Type"},
-            "ir": {
-                "attributes_to_show": "Authors|Publication_Date|YOP|Access_Method"
-                "|Access_Type|Data_Type|Article_Version"
-            },
-            "pr": {"attributes_to_show": "Access_Method|Data_Type"},
-            "dr": {"attributes_to_show": "Access_Method|Data_Type"},
-        },
-        "filters": {"ir": {"include_parent_details": True}},
     }
 
     def __init__(self, url, requestor_id, customer_id=None, extra_params=None, auth=None):
@@ -291,6 +321,10 @@ class Sushi5Client(SushiClientBase):
         output_content: typing.Optional[typing.IO] = None,
         params=None,
     ) -> Counter5ReportBase:
+        report_class = CounterVersion.C5.get_report_class(report_type)
+        params = params or {}
+        params.update(report_class.extra_params)
+
         response = self.fetch_report_data(
             report_type, begin_date, end_date, params=params, dump_file=output_content
         )
@@ -298,21 +332,6 @@ class Sushi5Client(SushiClientBase):
             # status codes in the 4xx range may be OK and just provide additional signal
             # about an issue - we need to parse the result in case there is more info
             # in the body
-            report_class: typing.Type[Counter5ReportBase]
-            report_id = report_type.lower()
-            if report_id == "tr":
-                report_class = Counter5TRReport
-            elif report_id == "dr":
-                report_class = Counter5DRReport
-            elif report_id == "pr":
-                report_class = Counter5PRReport
-            elif report_id == "ir":
-                report_class = Counter5IRReport
-            elif report_id == "ir_m1":
-                report_class = Counter5IRM1Report
-            else:
-                raise NotImplementedError()
-
             if output_content:
                 output_content.seek(0)
             return report_class(output_content, http_status_code=response.status_code)
@@ -434,6 +453,10 @@ class Sushi51Client(Sushi5Client):
         output_content: typing.Optional[typing.IO] = None,
         params=None,
     ) -> Counter51ReportBase:
+        report_class = CounterVersion.C51.get_report_class(report_type)
+        params = params or {}
+        params.update(report_class.extra_params)
+
         response = self.fetch_report_data(
             report_type, begin_date, end_date, params=params, dump_file=output_content
         )
@@ -441,19 +464,6 @@ class Sushi51Client(Sushi5Client):
             # status codes in the 4xx range may be OK and just provide additional signal
             # about an issue - we need to parse the result in case there is more info
             # in the body
-            report_class: typing.Type[Counter51ReportBase]
-            report_id = report_type.lower()
-            if report_id == "tr":
-                report_class = Counter51TRReport
-            elif report_id == "dr":
-                report_class = Counter51DRReport
-            elif report_id == "pr":
-                report_class = Counter51PRReport
-            elif report_id == "ir":
-                report_class = Counter51IRReport
-            else:
-                raise NotImplementedError()
-
             if output_content:
                 output_content.seek(0)
             return report_class(output_content, http_status_code=response.status_code)

@@ -101,6 +101,7 @@ ALLOWED_ITEM_IDS = {
 
 
 class Counter5ReportBase:
+    extra_params: typing.Dict[str, str] = {}
     dimensions = []  # this should be redefined in subclasses
     allowed_item_ids: typing.Dict[str, str] = {}  # this should be redefined in subclasses
 
@@ -376,6 +377,10 @@ class Counter5ReportBase:
 
 
 class Counter5DRReport(Counter5ReportBase):
+    extra_params: typing.Dict[str, str] = {
+        "attributes_to_show": "Access_Method|Data_Type",
+    }
+
     dimensions = ["Access_Method", "Data_Type", "Publisher", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["DR"]
 
@@ -385,6 +390,10 @@ class Counter5DRReport(Counter5ReportBase):
 
 
 class Counter5TRReport(Counter5ReportBase):
+    extra_params: typing.Dict[str, str] = {
+        "attributes_to_show": "YOP|Access_Method|Access_Type|Data_Type|Section_Type",
+    }
+
     dimensions = [
         "Access_Type",
         "Access_Method",
@@ -398,6 +407,9 @@ class Counter5TRReport(Counter5ReportBase):
 
 
 class Counter5PRReport(Counter5ReportBase):
+    extra_params: typing.Dict[str, str] = {
+        "attributes_to_show": "Access_Method|Data_Type",
+    }
     dimensions = ["Access_Method", "Data_Type", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["PR"]
 
@@ -408,6 +420,11 @@ class Counter5PRReport(Counter5ReportBase):
 
 
 class Counter5IRReport(Counter5ReportBase):
+    extra_params = {
+        "attributes_to_show": "Authors|Publication_Date|YOP|Access_Method"
+        "|Access_Type|Data_Type|Article_Version",
+        "include_parent_details": True,
+    }
     dimensions = [
         "Access_Type",
         "Access_Method",
