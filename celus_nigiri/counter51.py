@@ -306,13 +306,12 @@ class Counter51DRReport(Counter51ReportBase):
 
 class Counter51TRReport(Counter51ReportBase):
     extra_params: typing.Dict[str, str] = {
-        "attributes_to_show": "YOP|Access_Method|Access_Type|Section_Type",
+        "attributes_to_show": "YOP|Access_Method|Access_Type",
     }
     dimensions = [
         "Access_Type",
         "Access_Method",
         "Data_Type",
-        "Section_Type",
         "YOP",
         "Publisher",
         "Platform",
