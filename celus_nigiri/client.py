@@ -2,9 +2,11 @@ import csv
 import enum
 import json
 import logging
+import os
 import traceback
 import typing
 import urllib
+from datetime import date, datetime
 from io import StringIO
 from urllib.parse import urlparse
 
@@ -32,6 +34,7 @@ from .counter51 import (
 )
 from .error_codes import error_code_to_severity
 from .exceptions import SushiException
+from .utils import begin_month, end_month, parse_date_fuzzy
 
 logger = logging.getLogger(__name__)
 
@@ -240,16 +243,31 @@ class Sushi5Client(SushiClientBase):
                 }
 
     @classmethod
-    def _encode_date(cls, value) -> str:
+    def _to_date(cls, value) -> date:
+        if isinstance(value, str):
+            return parse_date_fuzzy(value)
+        elif isinstance(value, datetime):
+            return value.date()
+        elif isinstance(value, date):
+            return value
+        else:
+            raise TypeError()
+
+    @classmethod
+    def _encode_date(cls, value: date) -> str:
         """
         >>> Sushi5Client._encode_date('2018-02-30')
         '2018-02'
         >>> Sushi5Client._encode_date(datetime(2018, 7, 6, 12, 25, 30))
         '2018-07'
         """
-        if hasattr(value, "isoformat"):
+        short_date_format = os.environ.get("NIGIRI_SHORT_DATE_FORMAT", "0") == "1"
+        if short_date_format:
+            # 2020-01
             return value.isoformat()[:7]
-        return value[:7]
+        else:
+            # 2020-01-01
+            return value.isoformat()[:10]
 
     def _construct_url_params(self, extra=None):
         result = {
@@ -282,8 +300,8 @@ class Sushi5Client(SushiClientBase):
         Prepare download params which are used to query sushi server
         """
         params = self._construct_url_params(extra=extra_params)
-        params["begin_date"] = self._encode_date(begin_date)
-        params["end_date"] = self._encode_date(end_date)
+        params["begin_date"] = self._encode_date(begin_month(self._to_date(begin_date)))
+        params["end_date"] = self._encode_date(end_month(self._to_date(end_date)))
         return params
 
     def fetch_report_data(

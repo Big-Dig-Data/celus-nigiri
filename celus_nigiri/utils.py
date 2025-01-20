@@ -54,3 +54,12 @@ def get_date_range(start_date: datetime.date, end_date: datetime.date) -> List[d
         start_date = start_date.replace(day=1)
 
     return months
+
+
+def begin_month(in_date: datetime.date) -> datetime.date:
+    return in_date.replace(day=1)
+
+
+def end_month(in_date: datetime.date) -> datetime.date:
+    last = calendar.monthrange(in_date.year, in_date.month)[1]
+    return datetime.date(year=in_date.year, month=in_date.month, day=last)
