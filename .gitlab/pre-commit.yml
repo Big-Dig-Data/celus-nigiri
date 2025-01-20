@@ -1,9 +1,12 @@
+variables:
+  POETRY_VERSION: "1.8.5"
+
 lints:pre_commit:
   stage: lints
   needs: []
   image: python:3.8
   before_script:
-    - curl -sSL https://install.python-poetry.org | python3 -
+    - curl -sSL https://install.python-poetry.org | python3 - --version=$POETRY_VERSION
     - export PATH="$HOME/.local/bin:$PATH"
     - poetry install
   script:
