@@ -461,7 +461,15 @@ class Sushi51Client(Sushi5Client):
         Prepare download url of a sushi server
         """
         report_type = self._check_report_type(report_type)
-        return "/".join([self.url.rstrip("/"), "r51/reports", report_type])
+        # Some platforms (ProQuest) in COUNTER registry contain following urls for C5 and C5.1
+        # C5 https://example.com/r5
+        # C5.1 https://example.com/r51
+        # resulted url for C5.1 should not contain /r51/r51
+        stripped_url = self.url.rstrip("/")
+        if stripped_url.endswith("/r51"):
+            return "/".join([stripped_url, "reports", report_type])
+        else:
+            return "/".join([stripped_url, "r51/reports", report_type])
 
     def get_report_data(
         self,

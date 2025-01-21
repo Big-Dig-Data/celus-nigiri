@@ -218,3 +218,36 @@ class TestSushi51:
         client = Sushi51Client(url, "foo")
         buffer = BytesIO()
         client.get_report_data("tr", in_start_date, in_end_date, output_content=buffer)
+
+    @pytest.mark.parametrize(
+        "in_url,out_url",
+        (
+            ("https://example.com/", "https://example.com/r51/reports/tr"),
+            ("https://example.com/r51", "https://example.com/r51/reports/tr"),
+            ("https://example.com/r51/", "https://example.com/r51/reports/tr"),
+            ("https://example.com/r5/", "https://example.com/r5/r51/reports/tr"),
+            ("https://example.com/r5", "https://example.com/r5/r51/reports/tr"),
+        ),
+    )
+    def test_r51_r51(
+        self,
+        in_url,
+        out_url,
+        responses,
+    ):
+        url_re = re.compile(in_url.replace(".", r"\.") + ".*")
+        content = open(self.data_dir / "TR_sample_r51.json", "r").read()
+
+        def callback(request):
+            assert request.url.startswith(f"{out_url}?")
+            return (200, {}, content)
+
+        responses.add_callback(
+            responses.GET,
+            url_re,
+            callback=callback,
+        )
+
+        client = Sushi51Client(in_url, "foo")
+        buffer = BytesIO()
+        client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
