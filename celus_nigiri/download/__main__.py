@@ -26,8 +26,8 @@ def main():
     parser.add_argument(
         "--report-type", "-T", metavar="RT", required=True, choices=available_report_types()
     )
-    parser.add_argument("--requestor-id", "-R", metavar="ID", required=True)
-    parser.add_argument("--customer-id", "-C", metavar="ID", default=None)
+    parser.add_argument("--requestor-id", "-R", metavar="ID", default=None)
+    parser.add_argument("--customer-id", "-C", metavar="ID", required=True)
     parser.add_argument("--api-key", "-A", metavar="KEY", default=None)
     parser.add_argument("--begin-date", "-B", metavar="YYYY-MM", type=parse_date, required=True)
     parser.add_argument("--end-date", "-E", metavar="YYYY-MM", type=parse_date, required=True)

@@ -96,7 +96,7 @@ def recursive_finder(
 
 
 class SushiClientBase:
-    def __init__(self, url, requestor_id, customer_id=None, extra_params=None, auth=None):
+    def __init__(self, url, customer_id, requestor_id=None, extra_params=None, auth=None):
         self.url = url
         self.requestor_id = requestor_id
         self.customer_id = customer_id
@@ -203,8 +203,8 @@ class Sushi5Client(SushiClientBase):
         "pr": {"name": "Platform report", "subreports": {"p1": "View by Metric_Type"}},
     }
 
-    def __init__(self, url, requestor_id, customer_id=None, extra_params=None, auth=None):
-        super().__init__(url, requestor_id, customer_id, extra_params, auth)
+    def __init__(self, url, customer_id, requestor_id=None, extra_params=None, auth=None):
+        super().__init__(url, customer_id, requestor_id, extra_params, auth)
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -504,7 +504,7 @@ class Sushi4Client(SushiClientBase):
     # remap of extra params into names that have special meaning for the pycounter client
     extra_params_remap = {"Name": "requestor_name", "Email": "requestor_email"}
 
-    def __init__(self, url, requestor_id, customer_id=None, extra_params=None, auth=None):
+    def __init__(self, url, customer_id, requestor_id=None, extra_params=None, auth=None):
         super().__init__(url, requestor_id, customer_id, extra_params, auth)
 
     @classmethod
