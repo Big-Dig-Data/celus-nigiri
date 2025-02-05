@@ -2,7 +2,6 @@ import csv
 import enum
 import json
 import logging
-import os
 import traceback
 import typing
 import urllib
@@ -32,11 +31,13 @@ from .counter51 import (
     Counter51ReportBase,
     Counter51TRReport,
 )
-from .error_codes import error_code_to_severity
+from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .utils import begin_month, end_month, parse_date_fuzzy
 
 logger = logging.getLogger(__name__)
+
+ReportClass = typing.TypeVar("ReportClass", "Counter5ReportBase", "Counter51ReportBase")
 
 
 class SushiError:
@@ -254,20 +255,19 @@ class Sushi5Client(SushiClientBase):
             raise TypeError()
 
     @classmethod
-    def _encode_date(cls, value: date) -> str:
+    def _encode_date(cls, value: date, long_date_format: bool) -> str:
         """
         >>> Sushi5Client._encode_date('2018-02-30')
         '2018-02'
         >>> Sushi5Client._encode_date(datetime(2018, 7, 6, 12, 25, 30))
         '2018-07'
         """
-        short_date_format = os.environ.get("NIGIRI_SHORT_DATE_FORMAT", "0") == "1"
-        if short_date_format:
-            # 2020-01
-            return value.isoformat()[:7]
-        else:
+        if long_date_format:
             # 2020-01-01
             return value.isoformat()[:10]
+        else:
+            # 2020-01
+            return value.isoformat()[:7]
 
     def _construct_url_params(self, extra=None):
         result = {
@@ -295,13 +295,17 @@ class Sushi5Client(SushiClientBase):
         report_type = self._check_report_type(report_type)
         return "/".join([self.url.rstrip("/"), "reports", report_type])
 
-    def make_download_params(self, extra_params, begin_date, end_date):
+    def make_download_params(
+        self, extra_params, begin_date, end_date, long_date_format: bool = True
+    ):
         """
         Prepare download params which are used to query sushi server
         """
         params = self._construct_url_params(extra=extra_params)
-        params["begin_date"] = self._encode_date(begin_month(self._to_date(begin_date)))
-        params["end_date"] = self._encode_date(end_month(self._to_date(end_date)))
+        params["begin_date"] = self._encode_date(
+            begin_month(self._to_date(begin_date)), long_date_format
+        )
+        params["end_date"] = self._encode_date(end_month(self._to_date(end_date)), long_date_format)
         return params
 
     def fetch_report_data(
@@ -310,7 +314,8 @@ class Sushi5Client(SushiClientBase):
         begin_date,
         end_date,
         dump_file: typing.Optional[typing.IO] = None,
-        params=None,
+        params: typing.Optional[dict] = None,
+        long_date_format: bool = True,
     ) -> Response:
         """
         Makes a request for the data, stores the resulting data into `dump_file` and returns
@@ -323,13 +328,53 @@ class Sushi5Client(SushiClientBase):
         :return:
         """
         url = self.make_download_url(report_type)
-        params = self.make_download_params(params, begin_date, end_date)
+        params = self.make_download_params(
+            params, begin_date, end_date, long_date_format=long_date_format
+        )
         response = self._make_request(url, params, stream=bool(dump_file))
         if dump_file is not None:
             for data in response.iter_content(1024 * 1024):
                 dump_file.write(data)
             dump_file.seek(0)
         return response
+
+    def _get_report_data(
+        self,
+        report_class: typing.Type[ReportClass],
+        report_type,
+        begin_date,
+        end_date,
+        output_content: typing.Optional[typing.IO] = None,
+        params=None,
+    ) -> ReportClass:
+        for long_date_format in (True, False):
+            response = self.fetch_report_data(
+                report_type,
+                begin_date,
+                end_date,
+                params=params,
+                dump_file=output_content,
+                long_date_format=long_date_format,
+            )
+            if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
+                # status codes in the 4xx range may be OK and just provide additional signal
+                # about an issue - we need to parse the result in case there is more info
+                # in the body
+                if output_content:
+                    output_content.seek(0)
+                report = report_class(
+                    output_content, http_status_code=response.status_code, url=response.url
+                )
+                if any(
+                    getattr(e, "code", None) == str(ErrorCode.INVALID_DATE_ARGS.value)
+                    for e in report.errors
+                ):
+                    continue
+
+                return report
+
+        # for other response codes we raise an error - it should be only exotic ones
+        response.raise_for_status()
 
     def get_report_data(
         self,
@@ -343,18 +388,9 @@ class Sushi5Client(SushiClientBase):
         params = params or {}
         params.update(report_class.extra_params)
 
-        response = self.fetch_report_data(
-            report_type, begin_date, end_date, params=params, dump_file=output_content
+        return self._get_report_data(
+            report_class, report_type, begin_date, end_date, output_content, params
         )
-        if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
-            # status codes in the 4xx range may be OK and just provide additional signal
-            # about an issue - we need to parse the result in case there is more info
-            # in the body
-            if output_content:
-                output_content.seek(0)
-            return report_class(output_content, http_status_code=response.status_code)
-        # for other response codes we raise an error - it should be only exotic ones
-        response.raise_for_status()
 
     @classmethod
     def validate_data(cls, errors: typing.List[CounterError], warnings: typing.List[CounterError]):
@@ -483,18 +519,9 @@ class Sushi51Client(Sushi5Client):
         params = params or {}
         params.update(report_class.extra_params)
 
-        response = self.fetch_report_data(
-            report_type, begin_date, end_date, params=params, dump_file=output_content
+        return self._get_report_data(
+            report_class, report_type, begin_date, end_date, output_content, params
         )
-        if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
-            # status codes in the 4xx range may be OK and just provide additional signal
-            # about an issue - we need to parse the result in case there is more info
-            # in the body
-            if output_content:
-                output_content.seek(0)
-            return report_class(output_content, http_status_code=response.status_code)
-        # for other response codes we raise an error - it should be only exotic ones
-        response.raise_for_status()
 
 
 class Sushi4Client(SushiClientBase):

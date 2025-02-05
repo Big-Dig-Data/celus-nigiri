@@ -31,7 +31,13 @@ class Counter51ReportBase(metaclass=ABCMeta):
     def allowed_item_ids(self) -> typing.Dict[str, str]:
         raise NotImplementedError()
 
-    def __init__(self, report: typing.Optional[typing.IO[bytes]] = None, http_status_code=None):
+    def __init__(
+        self,
+        report: typing.Optional[typing.IO[bytes]] = None,
+        http_status_code=None,
+        url: typing.Optional[str] = None,
+    ):
+        self.url = url
         self.records = []
         self.queued = False
         self.record_found: bool = False  # is populated once `fd_to_dicts` is called

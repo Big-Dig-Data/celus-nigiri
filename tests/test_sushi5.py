@@ -1,3 +1,4 @@
+import json
 import re
 from datetime import date, datetime
 from io import BytesIO
@@ -114,45 +115,80 @@ class TestSushi5:
         assert report.http_status_code == 500
 
     @pytest.mark.parametrize(
-        "env_var,in_start_date,in_end_date,begin_date_param,end_date_param",
+        "fail_short,fail_long,in_start_date,in_end_date,params",
         (
-            (None, "2020-01-01", "2020-01-01", "2020-01-01", "2020-01-31"),
-            ("0", "2020-01-01", "2020-01-01", "2020-01-01", "2020-01-31"),
-            ("1", "2020-01-01", "2020-01-01", "2020-01", "2020-01"),
-            ("0", "2020-02-01", "2020-02-29", "2020-02-01", "2020-02-29"),
-            ("0", "2020-02-01", "2020-02-01", "2020-02-01", "2020-02-29"),
-            (None, "2020-01", "2020-01", "2020-01-01", "2020-01-31"),
-            ("0", "2020-01", "2020-01", "2020-01-01", "2020-01-31"),
-            ("1", "2020-01", "2020-01", "2020-01", "2020-01"),
-            ("1", "2020-02", "2020-02", "2020-02", "2020-02"),
-            (None, date(2020, 1, 1), date(2020, 1, 1), "2020-01-01", "2020-01-31"),
-            ("0", date(2020, 1, 1), date(2020, 1, 1), "2020-01-01", "2020-01-31"),
-            ("1", date(2020, 1, 1), date(2020, 1, 1), "2020-01", "2020-01"),
-            (None, datetime(2020, 1, 1), datetime(2020, 1, 1), "2020-01-01", "2020-01-31"),
-            ("0", datetime(2020, 1, 1), datetime(2020, 1, 1), "2020-01-01", "2020-01-31"),
-            ("1", datetime(2020, 1, 1), datetime(2020, 1, 1), "2020-01", "2020-01"),
+            (True, False, "2020-01-01", "2020-01-01", [("2020-01-01", "2020-01-31")]),
+            (
+                False,
+                True,
+                "2020-01-01",
+                "2020-01-01",
+                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+            ),
+            (True, False, "2020-02-01", "2020-02-29", [("2020-02-01", "2020-02-29")]),
+            (
+                False,
+                True,
+                "2020-02-01",
+                "2020-02-29",
+                [("2020-02-01", "2020-02-29"), ("2020-02", "2020-02")],
+            ),
+            (True, False, "2020-01", "2020-01", [("2020-01-01", "2020-01-31")]),
+            (
+                False,
+                True,
+                "2020-01",
+                "2020-01",
+                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+            ),
+            (True, False, date(2020, 1, 1), date(2020, 1, 1), [("2020-01-01", "2020-01-31")]),
+            (
+                False,
+                True,
+                date(2020, 1, 1),
+                date(2020, 1, 1),
+                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+            ),
+            (
+                True,
+                False,
+                datetime(2020, 1, 1),
+                datetime(2020, 1, 1),
+                [("2020-01-01", "2020-01-31")],
+            ),
+            (
+                False,
+                True,
+                datetime(2020, 1, 1),
+                datetime(2020, 1, 1),
+                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+            ),
         ),
     )
     def test_data_formats(
         self,
-        env_var,
+        fail_short,
+        fail_long,
         in_start_date,
         in_end_date,
-        begin_date_param,
-        end_date_param,
-        monkeypatch,
+        params,
         responses,
     ):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
         content = open(self.data_dir / "counter5_tr_test1.json", "r").read()
-
-        if env_var:
-            monkeypatch.setenv("NIGIRI_SHORT_DATE_FORMAT", env_var)
+        date_params = []
 
         def callback(request):
-            assert request.params["begin_date"] == begin_date_param
-            assert request.params["end_date"] == end_date_param
+            date_params.append((request.params["begin_date"], request.params["end_date"]))
+            if (
+                len(request.params["begin_date"]) == 7 or len(request.params["end_date"]) == 7
+            ) and fail_short:
+                return 200, {}, json.dumps({"Code": "3020", "Message": "Invalid Date Arguments"})
+            if (
+                len(request.params["begin_date"]) == 10 or len(request.params["end_date"]) == 10
+            ) and fail_long:
+                return 200, {}, json.dumps({"Code": "3020", "Message": "Invalid Date Arguments"})
             return (200, {}, content)
 
         responses.add_callback(
@@ -163,4 +199,5 @@ class TestSushi5:
 
         client = Sushi5Client(url, "foo")
         buffer = BytesIO()
-        client.get_report_data("tr", in_start_date, in_end_date, output_content=buffer)
+        assert client.get_report_data("tr", in_start_date, in_end_date, output_content=buffer)
+        assert params == date_params

@@ -105,7 +105,13 @@ class Counter5ReportBase:
     dimensions = []  # this should be redefined in subclasses
     allowed_item_ids: typing.Dict[str, str] = {}  # this should be redefined in subclasses
 
-    def __init__(self, report: typing.Optional[typing.IO[bytes]] = None, http_status_code=None):
+    def __init__(
+        self,
+        report: typing.Optional[typing.IO[bytes]] = None,
+        http_status_code=None,
+        url: typing.Optional[str] = None,
+    ):
+        self.url = url
         self.records = []
         self.queued = False
         self.record_found: bool = False  # is populated once `fd_to_dicts` is called
