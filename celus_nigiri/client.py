@@ -2,6 +2,7 @@ import csv
 import enum
 import json
 import logging
+import os
 import traceback
 import typing
 import urllib
@@ -347,7 +348,11 @@ class Sushi5Client(SushiClientBase):
         output_content: typing.Optional[typing.IO] = None,
         params=None,
     ) -> ReportClass:
-        for long_date_format in (True, False):
+        if os.environ.get("NIGIRI_LONG_DATE_FORMAT_FIRST", "0") == "1":
+            long_date_format_tries = (True, False)
+        else:
+            long_date_format_tries = (False, True)
+        for long_date_format in long_date_format_tries:
             response = self.fetch_report_data(
                 report_type,
                 begin_date,

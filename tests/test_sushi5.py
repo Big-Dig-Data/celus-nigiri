@@ -115,35 +115,39 @@ class TestSushi5:
         assert report.http_status_code == 500
 
     @pytest.mark.parametrize(
-        "fail_short,fail_long,in_start_date,in_end_date,params",
+        "fail_short,fail_long,long_date_format_first,in_start_date,in_end_date,params",
         (
-            (True, False, "2020-01-01", "2020-01-01", [("2020-01-01", "2020-01-31")]),
+            (True, False, True, "2020-01-01", "2020-01-01", [("2020-01-01", "2020-01-31")]),
             (
                 False,
+                True,
                 True,
                 "2020-01-01",
                 "2020-01-01",
                 [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
             ),
-            (True, False, "2020-02-01", "2020-02-29", [("2020-02-01", "2020-02-29")]),
+            (True, False, True, "2020-02-01", "2020-02-29", [("2020-02-01", "2020-02-29")]),
             (
                 False,
+                True,
                 True,
                 "2020-02-01",
                 "2020-02-29",
                 [("2020-02-01", "2020-02-29"), ("2020-02", "2020-02")],
             ),
-            (True, False, "2020-01", "2020-01", [("2020-01-01", "2020-01-31")]),
+            (True, False, True, "2020-01", "2020-01", [("2020-01-01", "2020-01-31")]),
             (
                 False,
+                True,
                 True,
                 "2020-01",
                 "2020-01",
                 [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
             ),
-            (True, False, date(2020, 1, 1), date(2020, 1, 1), [("2020-01-01", "2020-01-31")]),
+            (True, False, True, date(2020, 1, 1), date(2020, 1, 1), [("2020-01-01", "2020-01-31")]),
             (
                 False,
+                True,
                 True,
                 date(2020, 1, 1),
                 date(2020, 1, 1),
@@ -152,6 +156,7 @@ class TestSushi5:
             (
                 True,
                 False,
+                True,
                 datetime(2020, 1, 1),
                 datetime(2020, 1, 1),
                 [("2020-01-01", "2020-01-31")],
@@ -159,9 +164,93 @@ class TestSushi5:
             (
                 False,
                 True,
+                True,
                 datetime(2020, 1, 1),
                 datetime(2020, 1, 1),
                 [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+            ),
+            (
+                True,
+                False,
+                False,
+                "2020-01-01",
+                "2020-01-01",
+                [
+                    ("2020-01", "2020-01"),
+                    ("2020-01-01", "2020-01-31"),
+                ],
+            ),
+            (
+                False,
+                True,
+                False,
+                "2020-01-01",
+                "2020-01-01",
+                [("2020-01", "2020-01")],
+            ),
+            (
+                True,
+                False,
+                False,
+                "2020-02-01",
+                "2020-02-29",
+                [("2020-02", "2020-02"), ("2020-02-01", "2020-02-29")],
+            ),
+            (
+                False,
+                True,
+                False,
+                "2020-02-01",
+                "2020-02-29",
+                [("2020-02", "2020-02")],
+            ),
+            (
+                True,
+                False,
+                False,
+                "2020-01",
+                "2020-01",
+                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
+            ),
+            (
+                False,
+                True,
+                False,
+                "2020-01",
+                "2020-01",
+                [("2020-01", "2020-01")],
+            ),
+            (
+                True,
+                False,
+                False,
+                date(2020, 1, 1),
+                date(2020, 1, 1),
+                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
+            ),
+            (
+                False,
+                True,
+                False,
+                date(2020, 1, 1),
+                date(2020, 1, 1),
+                [("2020-01", "2020-01")],
+            ),
+            (
+                True,
+                False,
+                False,
+                datetime(2020, 1, 1),
+                datetime(2020, 1, 1),
+                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
+            ),
+            (
+                False,
+                True,
+                False,
+                datetime(2020, 1, 1),
+                datetime(2020, 1, 1),
+                [("2020-01", "2020-01")],
             ),
         ),
     )
@@ -169,15 +258,20 @@ class TestSushi5:
         self,
         fail_short,
         fail_long,
+        long_date_format_first,
         in_start_date,
         in_end_date,
         params,
         responses,
+        monkeypatch,
     ):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
         content = open(self.data_dir / "counter5_tr_test1.json", "r").read()
         date_params = []
+
+        if long_date_format_first:
+            monkeypatch.setenv("NIGIRI_LONG_DATE_FORMAT_FIRST", "1")
 
         def callback(request):
             date_params.append((request.params["begin_date"], request.params["end_date"]))
