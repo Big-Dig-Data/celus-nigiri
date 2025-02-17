@@ -332,11 +332,11 @@ class TestSushi51:
             if (
                 len(request.params["begin_date"]) == 7 or len(request.params["end_date"]) == 7
             ) and fail_short:
-                return 200, {}, json.dumps({"Code": "3020", "Message": "Invalid Date Arguments"})
+                return 200, {}, json.dumps({"Code": 3020, "Message": "Invalid Date Arguments"})
             if (
                 len(request.params["begin_date"]) == 10 or len(request.params["end_date"]) == 10
             ) and fail_long:
-                return 200, {}, json.dumps({"Code": "3020", "Message": "Invalid Date Arguments"})
+                return 200, {}, json.dumps({"Code": 3020, "Message": "Invalid Date Arguments"})
             return (200, {}, content)
 
         responses.add_callback(

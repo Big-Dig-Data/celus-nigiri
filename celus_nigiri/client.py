@@ -371,7 +371,7 @@ class Sushi5Client(SushiClientBase):
                     output_content, http_status_code=response.status_code, url=response.url
                 )
                 if any(
-                    getattr(e, "code", None) == str(ErrorCode.INVALID_DATE_ARGS.value)
+                    str(getattr(e, "code", None)) == str(ErrorCode.INVALID_DATE_ARGS.value)
                     for e in report.errors
                 ):
                     continue
