@@ -114,6 +114,7 @@ class TestSushi5:
         assert isinstance(report.errors[0], TransportError)
         assert report.http_status_code == 500
 
+    @pytest.mark.now
     @pytest.mark.parametrize(
         "fail_short,fail_long,long_date_format_first,in_start_date,in_end_date,params",
         (
@@ -251,6 +252,22 @@ class TestSushi5:
                 datetime(2020, 1, 1),
                 datetime(2020, 1, 1),
                 [("2020-01", "2020-01")],
+            ),
+            (
+                True,
+                True,
+                False,
+                datetime(2020, 1, 1),
+                datetime(2020, 1, 1),
+                [("2020-01", "2020-01") ,("2020-01-01", "2020-01-31")]
+            ),
+            (
+                True,
+                True,
+                True,
+                datetime(2020, 1, 1),
+                datetime(2020, 1, 1),
+                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")]
             ),
         ),
     )

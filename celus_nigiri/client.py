@@ -352,7 +352,7 @@ class Sushi5Client(SushiClientBase):
             long_date_format_tries = (True, False)
         else:
             long_date_format_tries = (False, True)
-        for long_date_format in long_date_format_tries:
+        for i, long_date_format in enumerate(long_date_format_tries):
             response = self.fetch_report_data(
                 report_type,
                 begin_date,
@@ -374,7 +374,8 @@ class Sushi5Client(SushiClientBase):
                     str(getattr(e, "code", None)) == str(ErrorCode.INVALID_DATE_ARGS.value)
                     for e in report.errors
                 ):
-                    continue
+                    if i < len(long_date_format_tries) - 1:
+                        continue
 
                 return report
 
