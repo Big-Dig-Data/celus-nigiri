@@ -51,7 +51,7 @@ class CounterError:
         return dict(Code=self.code, Severity=self.severity, Message=self.message, Data=self.data)
 
     def __str__(self):
-        return f'{self.severity or "Error"} #{self.code}: {self.message}'
+        return f"{self.severity or 'Error'} #{self.code}: {self.message}"
 
     def raise_me(self):
         raise SushiException(str(self), content=self.data)
@@ -585,7 +585,7 @@ class Counter5TableReport:
         if not report_type or report_type not in self.report_type_to_dimensions:
             raise ValueError(f"Unsupported report type: {report_type}")
         if header.get("Release") != "5":
-            raise ValueError(f'Unsupported COUNTER release: {header.get("Release")}')
+            raise ValueError(f"Unsupported COUNTER release: {header.get('Release')}")
 
         # we continue reading using a dict reader
         reader = csv.DictReader(infile, dialect=dialect)
