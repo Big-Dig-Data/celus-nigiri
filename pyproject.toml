@@ -42,7 +42,7 @@ python = "^3.8.9"
 
 chardet = "^5.0.0"
 ijson = "~3.2.3"
-celus-pycounter = "~4.0.1"
+celus-pycounter = "~4.1.0"
 python-decouple = "^3.6"
 python-dateutil = "^2.9"
 xmltodict = "~0.13.0"
