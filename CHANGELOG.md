@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.6] - 2025-04-11
+
+### Changed
+- dependencies updated
+
+## [4.0.5] - 2025-02-19
+
+### Fixed
+- quickfix missing output if both long and short date versions return 3020
+
 ## [4.0.4] - 2025-02-17
 
 ### Fixed
