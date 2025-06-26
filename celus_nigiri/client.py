@@ -41,6 +41,11 @@ logger = logging.getLogger(__name__)
 ReportClass = typing.TypeVar("ReportClass", "Counter5ReportBase", "Counter51ReportBase")
 
 
+DEFAULT_USER_AGENT = """\
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) \
+Chrome/134.0.0.0 Safari/537.3"""
+
+
 class SushiError:
     def __init__(self, code="", text="", full_log="", raw_data=None, severity=None, data=None):
         self.code = code
@@ -205,16 +210,18 @@ class Sushi5Client(SushiClientBase):
         "pr": {"name": "Platform report", "subreports": {"p1": "View by Metric_Type"}},
     }
 
-    def __init__(self, url, customer_id, requestor_id=None, extra_params=None, auth=None):
+    def __init__(
+        self,
+        url,
+        customer_id,
+        requestor_id=None,
+        extra_params=None,
+        auth=None,
+        user_agent=DEFAULT_USER_AGENT,
+    ):
         super().__init__(url, customer_id, requestor_id, extra_params, auth)
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": (
-                    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0"
-                )
-            }
-        )
+        self.session.headers.update({"User-Agent": user_agent})
         proxy = self._get_proxy(url)
         if proxy:
             logger.debug("Using proxy %s for server %s", proxy["proxy"], url)
