@@ -165,7 +165,7 @@ class Counter5ReportBase:
 
     def check_header(self, header, fd):
         lower_keys = [e.lower() for e in header]
-        for field in ["report_id", "customer_id"]:  # mandatory header fields
+        for field in ["release", "report_id", "report_name"]:  # mandatory header fields
             if field not in lower_keys:
                 raise SushiException("Incorrect format", content=fd.read())
 
