@@ -104,6 +104,7 @@ class Counter5ReportBase:
     extra_params: typing.Dict[str, str] = {}
     dimensions = []  # this should be redefined in subclasses
     allowed_item_ids: typing.Dict[str, str] = {}  # this should be redefined in subclasses
+    uses_parents = False
 
     def __init__(
         self,
@@ -442,10 +443,14 @@ class Counter5IRReport(Counter5ReportBase):
         "Parent_Data_Type",
     ]
     allowed_item_ids = ALLOWED_ITEM_IDS["IR"]
+    uses_parents = True
 
     @classmethod
     def _item_get_title(cls, item):
-        return item.get("Item_Parent", {}).get("Item_Name", "")
+        if cls.uses_parents:
+            return item.get("Item_Parent", {}).get("Item_Name", "")
+        else:
+            return ""
 
     @classmethod
     def _item_get_item(cls, item):
@@ -484,13 +489,18 @@ class Counter5IRReport(Counter5ReportBase):
 
     @classmethod
     def _item_get_title_ids(cls, item):
-        return cls._extract_title_ids(item.get("Item_Parent", {}).get("Item_ID", []) or [])
+        if cls.uses_parents:
+            return cls._extract_title_ids(item.get("Item_Parent", {}).get("Item_ID", []) or [])
+        else:
+            return {}
 
     @classmethod
     def _extract_dimension_data(cls, dimensions: list, record: dict):
         res = super()._extract_dimension_data(dimensions, record)
         # enrich result with Parent_Data_Type => it can be useful during processing
-        if parent_data_type := record.get("Item_Parent", {}).get("Data_Type"):
+        if cls.uses_parents and (
+            parent_data_type := record.get("Item_Parent", {}).get("Data_Type")
+        ):
             res["Parent_Data_Type"] = parent_data_type
         return res
 
@@ -498,6 +508,7 @@ class Counter5IRReport(Counter5ReportBase):
 class Counter5IRM1Report(Counter5IRReport):
     dimensions = ["Publisher", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["IR_M1"]
+    uses_parents = False
 
 
 class Counter5TableReport:

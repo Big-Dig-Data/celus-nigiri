@@ -5,6 +5,7 @@ import pytest
 
 from celus_nigiri.counter5 import (
     Counter5DRReport,
+    Counter5IRM1Report,
     Counter5IRReport,
     Counter5TableReport,
     Counter5TRReport,
@@ -205,6 +206,24 @@ class TestCounter5Reading:
                 pass
 
         assert counter == 7, "Some data were processed"
+
+    def test_bloomsbery_strange_irm1_with_parents(self):
+        """
+        This is a test for a regression in the parsing of the IR_M1 report.
+        In the past, we were able to ingest this data without any issues,
+        but after introduction of parents, it crashed on an unexpected list
+        in parents. But in IRM1, there should be no parents anyway, so we need
+        to make sure that we can handle this case.
+        """
+        reader = Counter5IRM1Report()
+        records = [
+            e
+            for e in reader.file_to_records(
+                Path(__file__).parent / "data/counter5/bloomsbery-parent.IR_M1.json"
+            )
+        ]
+        assert len(records) > 0
+        assert all(r.title == "" for r in records)
 
 
 class TestCounter5TableReports:
