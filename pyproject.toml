@@ -7,7 +7,7 @@ line-length = 100
 src = ["celus_nigiri", "tests"]
 
 [tool.ruff.lint]
-fixable = ['I001']  # isort: imports are incorrectly sorted
+fixable = ['I001'] # isort: imports are incorrectly sorted
 select = [
 	# Pyflakes
 	"F",
@@ -21,7 +21,7 @@ select = [
 known-first-party = ["celus_nigiri"]
 
 [tool.ruff.lint.per-file-ignores]
-"test_*.py" = ["B011"]  # test files should have asserts
+"test_*.py" = ["B011"] # test files should have asserts
 
 [tool.pytest.ini_options]
 testpaths = "tests/"
@@ -30,18 +30,21 @@ testpaths = "tests/"
 name = "celus-nigiri"
 version = "4.1.1"
 description = "Library for downloading and parsing counter-like data."
-authors = ["Beda Kosata <beda@bigdigdata.com>", "Stepan Henek <stepan@bigdigdata.com>"]
+authors = [
+	"Beda Kosata <beda@bigdigdata.com>",
+	"Stepan Henek <stepan@bigdigdata.com>",
+]
 license = "MIT"
 classifiers = [
 	"Programming Language :: Python :: 3",
-	"Topic :: Software Development :: Libraries"
+	"Topic :: Software Development :: Libraries",
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8.9"
+python = "^3.9.6"
 
 chardet = "^5.0.0"
-ijson = "~3.2.3"
+ijson = "~3.4.0"
 celus-pycounter = "~4.1.0"
 python-decouple = "^3.6"
 python-dateutil = "^2.9"
@@ -53,9 +56,9 @@ nigiri-csv = 'celus_nigiri.csv_detect.__main__:main'
 
 
 [tool.poetry.dev-dependencies]
-pre-commit = "~3.5.0"
-pytest = "~7.4.3"
-pytest-cov = "~4.1.0"
+pre-commit = "~4.3.0"
+pytest = "~8.4.1"
+pytest-cov = "~6.2.1"
 pytest-responses = "~0.5.1"
 responses = "~0.25.3"
-ruff = "~0.11.5"
+ruff = "~0.12.9"
