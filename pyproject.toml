@@ -1,6 +1,46 @@
+[project]
+name = "celus-nigiri"
+version = "4.1.2"
+description = "Library for downloading and parsing counter-like data."
+authors = [
+    { name = "Beda Kosata", email = "beda@bigdigdata.com" },
+    { name = "Stepan Henek", email = "stepan@bigdigdata.com" },
+]
+requires-python = ">=3.9.6,<4"
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "chardet>=5.0.0,<6",
+    "ijson~=3.4.0",
+    "celus-pycounter~=4.1.0",
+    "python-decouple~=3.6",
+    "python-dateutil~=2.9",
+    "xmltodict~=0.13.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit~=4.3.0",
+    "pytest~=8.4.1",
+    "pytest-cov~=6.2.1",
+    "pytest-responses~=0.5.1",
+    "responses~=0.25.3",
+    "ruff~=0.12.9",
+]
+
+[project.scripts]
+nigiri-download = "celus_nigiri.download.__main__:main"
+nigiri-csv = "celus_nigiri.csv_detect.__main__:main"
+
 [build-system]
-requires = ["poetry>=1.1.13"]
-build-backend = "poetry.masonry.api"
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+package = true
 
 [tool.ruff]
 line-length = 100
@@ -25,40 +65,3 @@ known-first-party = ["celus_nigiri"]
 
 [tool.pytest.ini_options]
 testpaths = "tests/"
-
-[tool.poetry]
-name = "celus-nigiri"
-version = "4.1.2"
-description = "Library for downloading and parsing counter-like data."
-authors = [
-	"Beda Kosata <beda@bigdigdata.com>",
-	"Stepan Henek <stepan@bigdigdata.com>",
-]
-license = "MIT"
-classifiers = [
-	"Programming Language :: Python :: 3",
-	"Topic :: Software Development :: Libraries",
-]
-
-[tool.poetry.dependencies]
-python = "^3.9.6"
-
-chardet = "^5.0.0"
-ijson = "~3.4.0"
-celus-pycounter = "~4.1.0"
-python-decouple = "^3.6"
-python-dateutil = "^2.9"
-xmltodict = "~0.13.0"
-
-[tool.poetry.scripts]
-nigiri-download = 'celus_nigiri.download.__main__:main'
-nigiri-csv = 'celus_nigiri.csv_detect.__main__:main'
-
-
-[tool.poetry.dev-dependencies]
-pre-commit = "~4.3.0"
-pytest = "~8.4.1"
-pytest-cov = "~6.2.1"
-pytest-responses = "~0.5.1"
-responses = "~0.25.3"
-ruff = "~0.12.9"

@@ -1,19 +1,15 @@
-variables:
-  POETRY_VERSION: "1.8.5"
-
 tests:run_tests:
   stage: tests
   image: $IMAGE
   parallel:
     matrix:
-      - IMAGE: ['python:3.8', 'python:3.9', 'python:3.10']
+      - IMAGE: ['python:3.8', 'python:3.9', 'python:3.10', 'python:3.11', 'python:3.12']
   needs: []
   before_script:
-    - curl -sSL https://install.python-poetry.org | python3 - --version=$POETRY_VERSION
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
     - export PATH="$HOME/.local/bin:$PATH"
-    - poetry install
   script:
-    - poetry run pytest -v --junitxml=report.xml --cov=celus_nigiri --cov-report=xml --cov-report=term
+    - uv run pytest -v --junitxml=report.xml --cov=celus_nigiri --cov-report=xml --cov-report=term
   artifacts:
     reports:
       junit: report.xml
