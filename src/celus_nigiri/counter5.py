@@ -506,6 +506,7 @@ class Counter5IRReport(Counter5ReportBase):
 
 
 class Counter5IRM1Report(Counter5IRReport):
+    extra_params = {"attributes_to_show": ""}
     dimensions = ["Publisher", "Platform"]
     allowed_item_ids = ALLOWED_ITEM_IDS["IR_M1"]
     uses_parents = False
