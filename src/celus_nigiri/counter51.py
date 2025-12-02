@@ -411,3 +411,50 @@ class Counter51IRReport(Counter51ReportBase):
                 Author(name=author.get("Name"), ISNI=author.get("ISNI"), ORCID=author.get("ORCID"))
             )
         return res or None
+
+
+class Counter51IRM1Report(Counter51IRReport):
+    extra_params: typing.Dict[str, str] = {}  # no extra params, removes the inherited ones
+    # IR_M1 for C51 has Data_Type dimension, which is not present in C5
+    dimensions = ["Publisher", "Platform", "Data_Type"]
+    allowed_item_ids = ALLOWED_ITEM_IDS["IR_M1"]
+
+    def read_report(
+        self, header: dict, report_items: typing.Generator[dict, None, None]
+    ) -> typing.Generator[CounterRecord, None, None]:
+        """
+        Reads in the report as returned by the API using Sushi51Client
+        Overrides parent to prevent adding Parent_Data_Type (IR_M1 doesn't use parent data)
+        """
+        for report_item in report_items:
+            title = self._item_get_title(report_item)
+            title_ids = self._item_get_title_ids(report_item)
+            for item in report_item.get("Items", []):
+                self.check_item(item)
+                item_name = self._item_get_item(item)
+                item_ids = self._item_get_item_ids(item)
+                item_publication_date = self._item_get_publication_date(item)
+                item_authors = self._item_get_authors(item)
+                attribute_performances = item.get("Attribute_Performance", [])
+                for ap in attribute_performances:
+                    dimension_data = self._extract_dimension_data(
+                        self.dimensions, ap, item, report_item
+                    )
+                    # Note: Parent_Data_Type is NOT added here (unlike Counter51IRReport)
+                    performances = ap.get("Performance", {})
+                    for metric, data in performances.items():
+                        for month, value in data.items():
+                            start = datetime.strptime(month, "%Y-%m").date().replace(day=1)
+
+                            yield CounterRecord(
+                                value=int(value),
+                                metric=metric,
+                                start=start,
+                                title=title,
+                                title_ids=title_ids,
+                                item=item_name,
+                                item_ids=item_ids,
+                                item_publication_date=item_publication_date,
+                                item_authors=item_authors,
+                                dimension_data=dimension_data,
+                            )

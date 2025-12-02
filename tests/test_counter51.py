@@ -5,6 +5,7 @@ import pytest
 
 from celus_nigiri.counter51 import (
     Counter51DRReport,
+    Counter51IRM1Report,
     Counter51IRReport,
     Counter51PRReport,
     Counter51TRReport,
@@ -211,3 +212,67 @@ class TestCounter51Json:
             "YOP": "2018",
             # "Article_Version": "VoR",
         }
+
+    def test_sample_ir_m1(self):
+        """
+        Test proper parsing of an IR_M1 report from Counter 5.1 CoP.
+        """
+        reader = Counter51IRM1Report()
+        path = Path(__file__).parent / "data/counter51/IRM1_sample_r51.json"
+        records = [e for e in reader.file_to_records(path)]
+
+        assert (
+            len(records) == 5 * 12 * 2
+        )  # 5 items * 12 months * 2 metrics (Total_Item_Requests, Unique_Item_Requests)
+
+        # Check first record
+        assert records[0].title is None
+        assert records[0].title_ids.DOI is None
+        assert records[0].item == "Item 2"
+        assert records[0].item_ids.DOI == "10.9999/xxxxi02"
+        assert records[0].item_ids.Proprietary == "P1:I02"
+        assert records[0].item_publication_date is None
+        assert records[0].item_authors is None
+        assert records[0].metric == "Total_Item_Requests"
+        assert records[0].value == 767
+        assert records[0].start == date(2022, 1, 1)
+        assert records[0].end is None
+        assert records[0].dimension_data == {
+            "Data_Type": "Audiovisual",
+            "Platform": "Platform 1",
+            "Publisher": "Sample Publisher",
+        }
+        # Explicitly verify Parent_Data_Type is NOT present
+        assert "Parent_Data_Type" not in records[0].dimension_data
+
+        # Check a record with different Data_Type
+        image_records = [r for r in records if r.dimension_data.get("Data_Type") == "Image"]
+        assert len(image_records) > 0
+        image_record = image_records[0]
+        assert image_record.dimension_data == {
+            "Data_Type": "Image",
+            "Platform": "Platform 1",
+            "Publisher": "Sample Publisher",
+        }
+        # Explicitly verify Parent_Data_Type is NOT present
+        assert "Parent_Data_Type" not in image_record.dimension_data
+
+        # Check last record
+        assert records[-1].title is None
+        assert records[-1].title_ids.DOI is None
+        assert records[-1].item == "Item 22"
+        assert records[-1].item_ids.DOI == "10.9999/xxxxi22"
+        assert records[-1].item_ids.Proprietary == "P1:I22"
+        assert records[-1].item_publication_date is None
+        assert records[-1].item_authors is None
+        assert records[-1].metric == "Unique_Item_Requests"
+        assert records[-1].value == 804
+        assert records[-1].start == date(2022, 12, 1)
+        assert records[-1].end is None
+        assert records[-1].dimension_data == {
+            "Data_Type": "Sound",
+            "Platform": "Platform 1",
+            "Publisher": "Sample Publisher",
+        }
+        # Explicitly verify Parent_Data_Type is NOT present
+        assert "Parent_Data_Type" not in records[-1].dimension_data

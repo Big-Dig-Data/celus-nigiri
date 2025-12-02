@@ -27,6 +27,7 @@ from .counter5 import (
 )
 from .counter51 import (
     Counter51DRReport,
+    Counter51IRM1Report,
     Counter51IRReport,
     Counter51PRReport,
     Counter51ReportBase,
@@ -154,6 +155,8 @@ class CounterVersion(str, enum.Enum):
                 report_class = Counter51PRReport
             elif report_type == "ir":
                 report_class = Counter51IRReport
+            elif report_type == "ir_m1":
+                report_class = Counter51IRM1Report
             else:
                 raise NotImplementedError()
         elif self == CounterVersion.C5:

@@ -3,32 +3,32 @@ name = "celus-nigiri"
 version = "4.1.2"
 description = "Library for downloading and parsing counter-like data."
 authors = [
-    { name = "Beda Kosata", email = "beda@bigdigdata.com" },
-    { name = "Stepan Henek", email = "stepan@bigdigdata.com" },
+	{ name = "Beda Kosata", email = "beda@bigdigdata.com" },
+	{ name = "Stepan Henek", email = "stepan@bigdigdata.com" },
 ]
 requires-python = ">=3.9.6,<4"
 license = "MIT"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "Topic :: Software Development :: Libraries",
+	"Programming Language :: Python :: 3",
+	"Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "chardet>=5.0.0,<6",
-    "ijson~=3.4.0",
-    "celus-pycounter~=4.1.0",
-    "python-decouple~=3.6",
-    "python-dateutil~=2.9",
-    "xmltodict~=0.13.0",
+	"chardet>=5.0.0,<6",
+	"ijson~=3.4.0",
+	"celus-pycounter~=4.1.0",
+	"python-decouple~=3.6",
+	"python-dateutil~=2.9",
+	"xmltodict~=0.13.0",
 ]
 
 [dependency-groups]
 dev = [
-    "pre-commit~=4.3.0",
-    "pytest~=8.4.1",
-    "pytest-cov~=6.2.1",
-    "pytest-responses~=0.5.1",
-    "responses~=0.25.3",
-    "ruff~=0.12.9",
+	"pre-commit~=4.3.0",
+	"pytest~=8.4.1",
+	"pytest-cov~=6.2.1",
+	"pytest-responses~=0.5.1",
+	"responses~=0.25.3",
+	"ruff~=0.12.9",
 ]
 
 [project.scripts]
