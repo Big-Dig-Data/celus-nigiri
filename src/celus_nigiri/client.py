@@ -388,6 +388,10 @@ class Sushi5Client(SushiClientBase):
                     for e in report.errors
                 ):
                     if i < len(long_date_format_tries) - 1:
+                        # clear the output stream before fallback
+                        if output_content:
+                            output_content.seek(0)
+                            output_content.truncate(0)
                         continue
 
                 return report

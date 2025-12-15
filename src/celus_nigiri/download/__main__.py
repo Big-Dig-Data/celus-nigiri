@@ -31,6 +31,7 @@ def main():
     parser.add_argument("--api-key", "-A", metavar="KEY", default=None)
     parser.add_argument("--begin-date", "-B", metavar="YYYY-MM", type=parse_date, required=True)
     parser.add_argument("--end-date", "-E", metavar="YYYY-MM", type=parse_date, required=True)
+    parser.add_argument("--long-date-format", "-l", action="store_true", default=False)
     parser.add_argument(
         "--counter-version",
         "-V",
@@ -59,7 +60,12 @@ def main():
         extra_params=extra_params,
     )
 
-    response = client.fetch_report_data(args.report_type, args.begin_date, args.end_date)
+    response = client.fetch_report_data(
+        args.report_type,
+        args.begin_date,
+        args.end_date,
+        long_date_format=args.long_date_format,
+    )
 
     if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
         for data in response.iter_content(1024 * 1024):
