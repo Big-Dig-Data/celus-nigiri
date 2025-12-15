@@ -1,6 +1,6 @@
 [project]
 name = "celus-nigiri"
-version = "4.2.1"
+version = "4.2.2"
 description = "Library for downloading and parsing counter-like data."
 authors = [
 	{ name = "Beda Kosata", email = "beda@bigdigdata.com" },
