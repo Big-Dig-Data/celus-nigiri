@@ -6,7 +6,7 @@ authors = [
 	{ name = "Beda Kosata", email = "beda@bigdigdata.com" },
 	{ name = "Stepan Henek", email = "stepan@bigdigdata.com" },
 ]
-requires-python = ">=3.9.6,<4"
+requires-python = ">=3.12,<4"
 license = "MIT"
 classifiers = [
 	"Programming Language :: Python :: 3",
@@ -15,7 +15,7 @@ classifiers = [
 dependencies = [
 	"chardet>=5.0.0,<6",
 	"ijson~=3.4.0",
-	"celus-pycounter~=4.1.0",
+	"celus-pycounter~=5.0.0",
 	"python-decouple~=3.6",
 	"python-dateutil~=2.9",
 	"xmltodict~=0.13.0",
