@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.0.0] - 2026-01-14
+
+### Changed
+- updated celus-pycounter to 5.0.0
+- drop support for older version of python (oldest supported is 3.12)
+
 ## [4.2.2] - 2025-12-15
 
 ### Fixed
