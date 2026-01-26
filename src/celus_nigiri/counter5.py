@@ -68,7 +68,7 @@ class TransportError:
 
 
 ALLOWED_ITEM_IDS = {
-    "DR": {"Proprietary": "Proprietary", "Proprietary_ID": "Proprietary"},
+    "DR": {"Proprietary": "Proprietary", "Proprietary_ID": "Proprietary", "URI": "URI"},
     "TR": {
         "DOI": "DOI",
         "Online_ISSN": "Online_ISSN",

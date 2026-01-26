@@ -37,6 +37,10 @@
         {
           "Type": "Proprietary",
           "Value": "IIIIIIIII:000"
+        },
+        {
+          "Type": "URI",
+          "Value": "https://example.com"
         }
       ],
       "Database": "Database1",
