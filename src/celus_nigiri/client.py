@@ -298,12 +298,15 @@ class Sushi5Client(SushiClientBase):
             kwargs["auth"] = self.auth
         return self.session.get(url, params=params, stream=stream, **kwargs)
 
-    def make_download_url(self, report_type):
+    def make_download_url(self, report_type: typing.Optional[str] = None):
         """
         Prepare download url of a sushi server
         """
-        report_type = self._check_report_type(report_type)
-        return "/".join([self.url.rstrip("/"), "reports", report_type])
+        if report_type:
+            report_type = self._check_report_type(report_type)
+            return "/".join([self.url.rstrip("/"), "reports", report_type])
+        else:
+            return "/".join([self.url.rstrip("/"), "reports"])
 
     def make_download_params(
         self, extra_params, begin_date, end_date, long_date_format: bool = True
@@ -509,26 +512,51 @@ class Sushi5Client(SushiClientBase):
     def report_to_string(self, report_data):
         return json.dumps(report_data, ensure_ascii=False, indent=2)
 
+    def get_reports(
+        self, extra_params: typing.Optional[dict] = None
+    ) -> tuple[int, list | dict | None]:
+        """Obtains data from /reports/ endpoint
+
+        returns: list - supported reports, dict - sushi error, None - other error
+        """
+        params = self._construct_url_params(extra=extra_params)
+        url = self.make_download_url()
+        response = self._make_request(url, params)
+        try:
+            data = response.json()
+        except requests.exceptions.JSONDecodeError:
+            data = None
+
+        return response.status_code, data
+
 
 class Sushi51Client(Sushi5Client):
     """
     Client for SUSHI and COUNTER 5.1 protocol
     """
 
-    def make_download_url(self, report_type):
+    def make_download_url(self, report_type: typing.Optional[str] = None):
         """
         Prepare download url of a sushi server
         """
-        report_type = self._check_report_type(report_type)
+        if report_type:
+            report_type = self._check_report_type(report_type)
+
         # Some platforms (ProQuest) in COUNTER registry contain following urls for C5 and C5.1
         # C5 https://example.com/r5
         # C5.1 https://example.com/r51
         # resulted url for C5.1 should not contain /r51/r51
         stripped_url = self.url.rstrip("/")
         if stripped_url.endswith("/r51"):
-            return "/".join([stripped_url, "reports", report_type])
+            if report_type:
+                return "/".join([stripped_url, "reports", report_type])
+            else:
+                return "/".join([stripped_url, "reports"])
         else:
-            return "/".join([stripped_url, "r51/reports", report_type])
+            if report_type:
+                return "/".join([stripped_url, "r51/reports", report_type])
+            else:
+                return "/".join([stripped_url, "r51/reports"])
 
     def get_report_data(
         self,

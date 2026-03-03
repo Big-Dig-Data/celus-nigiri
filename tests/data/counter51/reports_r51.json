@@ -1,0 +1,98 @@
+[
+  {
+    "Report_ID": "PR_P1",
+    "Report_Name": "Platform Usage",
+    "Report_Description": "Platform-level usage summarized by Metric_Type.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "PR",
+    "Report_Name": "Platform Report",
+    "Report_Description": "A customizable report summarizing activity across a content provider’s platforms that allows the user to apply filters and select other configuration options.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR_B3",
+    "Report_Name": "Book Usage by Access Type",
+    "Report_Description": "Reports on book usage showing all applicable Metric_Types broken down by Access_Type.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR_B2",
+    "Report_Name": "Book Access Denied",
+    "Report_Description": "Reports on Access Denied activity for books where users were denied access because simultaneous-use licenses were exceeded or their institution did not have a license for the book.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR_B1",
+    "Report_Name": "Book Requests (Controlled)",
+    "Report_Description": "Reports on full-text activity for books, excluding Gold Open Access content, as Total_Item_Requests and Unique_Title_Requests. The Unique_Title_Requests provides comparable usage across book platforms. The Total_Item_Requests shows overall activity; however, numbers between sites will vary significantly based on how the content is delivered (e.g. delivered as a complete book or by chapter).",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "IR",
+    "Report_Name": "Item Report",
+    "Report_Description": "A granular, customizable report showing activity at the level of the item (article, chapter, media object, etc.) that allows the user to apply filters and select other configuration options.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "IR_A1",
+    "Report_Name": "Journal Article Requests",
+    "Report_Description": "\t\nReports on journal article requests at the article level. This report is limited to content with a Data_Type of Article, Parent_Data_Type of Journal, and Metric_Types of Total_Item_Requests and Unique_Item_Requests.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR_J4",
+    "Report_Name": "Journal Requests by YOP (Controlled)",
+    "Report_Description": "Breaks down the usage of journal content, excluding Gold Open Access content, by year of publication (YOP), providing counts for the Metric_Types Total_Item_Requests and Unique_Item_Requests. Provides the details necessary to analyze usage of content in backfiles or covered by perpetual access agreement. Note that COUNTER reports do not provide access model or perpetual access rights details.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR_J3",
+    "Report_Name": "Journal Usage by Access Type",
+    "Report_Description": "Reports on usage of journal content for all Metric_Types broken down by Access_Type.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR_J2",
+    "Report_Name": "Journal Access Denied",
+    "Report_Description": "Reports on Access Denied activity for journal content where users were denied access because simultaneous-use licenses were exceeded or their institution did not have a license for the title.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR",
+    "Report_Name": "Title Report",
+    "Report_Description": "A customizable report detailing activity at the title level (journal, book, etc.) that allows the user to apply filters and select other configuration options.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  },
+  {
+    "Report_ID": "TR_J1",
+    "Report_Name": "Journal Requests (Controlled)",
+    "Report_Description": "Reports on usage of journal content, excluding Gold Open Access content, as Total_Item_Requests and Unique_Item_Requests. The Unique_Item_Requests provides comparable usage across journal platforms by reducing the inflationary effect that occurs when an HTML full text automatically displays and the user then accesses the PDF version. The Total_Item_Requests shows overall activity.",
+    "Release": "5.1",
+    "First_Month_Available": "2025-01",
+    "Last_Month_Available": "2026-01"
+  }
+]

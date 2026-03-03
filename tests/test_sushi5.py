@@ -312,3 +312,46 @@ class TestSushi5:
         buffer = BytesIO()
         assert client.get_report_data("tr", in_start_date, in_end_date, output_content=buffer)
         assert params == date_params
+
+    def test_make_download_url_no_report_type(self):
+        client = Sushi5Client("http://foo.bar.baz/", "foo")
+        assert client.make_download_url() == "http://foo.bar.baz/reports"
+
+    def test_get_reports_success(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = open(self.data_dir / "reports.json", "r").read()
+
+        responses.get(url_re, body=content)
+        client = Sushi5Client(url, "foo")
+        status_code, data = client.get_reports()
+        assert status_code == 200
+        assert isinstance(data, list)
+        assert len(data) == 12
+
+    def test_get_reports_non_json(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(url_re, body="Internal Server Error", status=500)
+        client = Sushi5Client(url, "foo")
+        status_code, data = client.get_reports()
+        assert status_code == 500
+        assert data is None
+
+    def test_get_reports_uses_reports_endpoint(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = open(self.data_dir / "reports.json", "r").read()
+        called_urls = []
+
+        def callback(request):
+            called_urls.append(request.url)
+            return (200, {}, content)
+
+        responses.add_callback(responses.GET, url_re, callback=callback)
+        client = Sushi5Client(url, "foo")
+        client.get_reports()
+        assert len(called_urls) == 1
+        assert "/reports?" in called_urls[0]
+        assert "/reports/" not in called_urls[0]

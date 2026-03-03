@@ -1,0 +1,86 @@
+[
+  {
+    "Report_Description": "Platform-level usage summarized by Metric_Type.",
+    "Report_Name": "Platform Usage",
+    "Report_ID": "PR_P1",
+    "Release": "5",
+    "Path": "/reports/pr_p1"
+  },
+  {
+    "Report_Description": "A customizable report summarizing activity across a content provider’s platforms that allows the user to apply filters and select other configuration options.",
+    "Report_Name": "Platform Master Report",
+    "Report_ID": "PR",
+    "Release": "5",
+    "Path": "/reports/pr"
+  },
+  {
+    "Report_Description": "Reports on book usage showing all applicable Metric_Types broken down by Access_Type.",
+    "Report_Name": "Book Usage by Access Type",
+    "Report_ID": "TR_B3",
+    "Release": "5",
+    "Path": "/reports/tr_b3"
+  },
+  {
+    "Report_Description": "Reports on Access Denied activity for books where users were denied access because simultaneous-use licenses were exceeded or their institution did not have a license for the book.",
+    "Report_Name": "Book Access Denied",
+    "Report_ID": "TR_B2",
+    "Release": "5",
+    "Path": "/reports/tr_b2"
+  },
+  {
+    "Report_Description": "Reports on full-text activity for books, excluding Gold Open Access content, as Total_Item_Requests and Unique_Title_Requests. The Unique_Title_Requests provides comparable usage across book platforms. The Total_Item_Requests shows overall activity; however, numbers between sites will vary significantly based on how the content is delivered (e.g. delivered as a complete book or by chapter).",
+    "Report_Name": "Book Requests (Excluding OA_Gold)",
+    "Report_ID": "TR_B1",
+    "Release": "5",
+    "Path": "/reports/tr_b1"
+  },
+  {
+    "Report_Description": "A granular, customizable report showing activity at the level of the item (article, chapter, media object, etc.) that allows the user to apply filters and select other configuration options.",
+    "Report_Name": "Item Master Report",
+    "Report_ID": "IR",
+    "Release": "5",
+    "Path": "/reports/ir"
+  },
+  {
+    "Report_Description": "\t\nReports on journal article requests at the article level. This report is limited to content with a Data_Type of Article, Parent_Data_Type of Journal, and Metric_Types of Total_Item_Requests and Unique_Item_Requests.",
+    "Report_Name": "Journal Article Requests",
+    "Report_ID": "IR_A1",
+    "Release": "5",
+    "Path": "/reports/ir_a1"
+  },
+  {
+    "Report_Description": "Breaks down the usage of journal content, excluding Gold Open Access content, by year of publication (YOP), providing counts for the Metric_Types Total_Item_Requests and Unique_Item_Requests. Provides the details necessary to analyze usage of content in backfiles or covered by perpetual access agreement. Note that COUNTER reports do not provide access model or perpetual access rights details.",
+    "Report_Name": "Journal Requests by YOP (Excluding OA_Gold)",
+    "Report_ID": "TR_J4",
+    "Release": "5",
+    "Path": "/reports/tr_j4"
+  },
+  {
+    "Report_Description": "Reports on usage of journal content for all Metric_Types broken down by Access_Type.",
+    "Report_Name": "Journal Usage by Access Type",
+    "Report_ID": "TR_J3",
+    "Release": "5",
+    "Path": "/reports/tr_j3"
+  },
+  {
+    "Report_Description": "Reports on Access Denied activity for journal content where users were denied access because simultaneous-use licenses were exceeded or their institution did not have a license for the title.",
+    "Report_Name": "Journal Access Denied",
+    "Report_ID": "TR_J2",
+    "Release": "5",
+    "Path": "/reports/tr_j2"
+  },
+  {
+    "Report_Description": "A customizable report detailing activity at the title level (journal, book, etc.) that allows the user to apply filters and select other configuration options.",
+    "Report_Name": "Title Master Report",
+    "Report_ID": "TR",
+    "Release": "5",
+    "Path": "/reports/tr"
+  },
+  {
+    "Report_Description": "Reports on usage of journal content, excluding Gold Open Access content, as Total_Item_Requests and Unique_Item_Requests. The Unique_Item_Requests provides comparable usage across journal platforms by reducing the inflationary effect that occurs when an HTML full text automatically displays and the user then accesses the PDF version. The Total_Item_Requests shows overall activity.",
+    "Report_Name": "Journal Requests (Excluding OA_Gold)",
+    "Report_ID": "TR_J1",
+    "Release": "5",
+    "Path": "/reports/tr_j1"
+  }
+]

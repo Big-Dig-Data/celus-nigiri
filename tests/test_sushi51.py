@@ -383,3 +383,56 @@ class TestSushi51:
         client = Sushi51Client(in_url, "foo")
         buffer = BytesIO()
         client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
+
+    @pytest.mark.parametrize(
+        "in_url,out_url",
+        (
+            ("https://example.com/", "https://example.com/r51/reports"),
+            ("https://example.com/r51", "https://example.com/r51/reports"),
+            ("https://example.com/r51/", "https://example.com/r51/reports"),
+            ("https://example.com/r5/", "https://example.com/r5/r51/reports"),
+            ("https://example.com/r5", "https://example.com/r5/r51/reports"),
+        ),
+    )
+    def test_make_download_url_no_report_type(self, in_url, out_url):
+        client = Sushi51Client(in_url, "foo")
+        assert client.make_download_url() == out_url
+
+    def test_get_reports_success(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = open(self.data_dir / "reports_r51.json", "r").read()
+
+        responses.get(url_re, body=content)
+        client = Sushi51Client(url, "foo")
+        status_code, data = client.get_reports()
+        assert status_code == 200
+        assert isinstance(data, list)
+        assert len(data) == 12
+
+    def test_get_reports_non_json(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(url_re, body="Internal Server Error", status=500)
+        client = Sushi51Client(url, "foo")
+        status_code, data = client.get_reports()
+        assert status_code == 500
+        assert data is None
+
+    def test_get_reports_uses_reports_endpoint(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = open(self.data_dir / "reports_r51.json", "r").read()
+        called_urls = []
+
+        def callback(request):
+            called_urls.append(request.url)
+            return (200, {}, content)
+
+        responses.add_callback(responses.GET, url_re, callback=callback)
+        client = Sushi51Client(url, "foo")
+        client.get_reports()
+        assert len(called_urls) == 1
+        assert "/r51/reports?" in called_urls[0]
+        assert "/r51/reports/" not in called_urls[0]
