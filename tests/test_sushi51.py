@@ -14,6 +14,28 @@ class TestSushi51:
     data_dir = Path(__file__).parent / "data/counter51/"
 
     @pytest.mark.parametrize(
+        "report_type,filename,record_found",
+        (
+            ("dr", "DR_sample_r51.json", True),
+            ("dr", "DR_sample_r51_wrong_months_all.json", False),
+            ("dr", "DR_sample_r51_wrong_months_some.json", True),
+        ),
+    )
+    def test_wrong_date(self, filename, report_type, record_found, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = (self.data_dir / filename).open().read()
+
+        responses.get(
+            url_re,
+            body=content,
+        )
+        client = Sushi51Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data(report_type, "2022-01", "2022-03", output_content=buffer)
+        assert report.record_found == record_found
+
+    @pytest.mark.parametrize(
         "rt,count",
         (
             ("DR", 3),
@@ -34,7 +56,7 @@ class TestSushi51:
 
         client = Sushi51Client(url, "foo")
         buffer = BytesIO()
-        report = client.get_report_data(rt.lower(), "2020-01", "2020-01", output_content=buffer)
+        report = client.get_report_data(rt.lower(), "2022-01", "2022-12", output_content=buffer)
         records = list(report.fd_to_dicts(buffer)[1])
         assert len(records) == count, "RecordItems count in json"
 

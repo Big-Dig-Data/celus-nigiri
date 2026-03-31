@@ -13,6 +13,28 @@ from celus_nigiri.counter5 import CounterError, TransportError
 class TestSushi5:
     data_dir = Path(__file__).parent / "data/counter5/"
 
+    @pytest.mark.parametrize(
+        "report_type,filename,record_found",
+        (
+            ("dr", "DR_wrong_date_none.json", True),
+            ("dr", "DR_wrong_date_all.json", False),
+            ("dr", "DR_wrong_date_some.json", True),
+        ),
+    )
+    def test_wrong_date(self, filename, report_type, record_found, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = (self.data_dir / filename).open().read()
+
+        responses.get(
+            url_re,
+            body=content,
+        )
+        client = Sushi5Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data(report_type, "2016-01", "2016-03", output_content=buffer)
+        assert report.record_found == record_found
+
     def test_successful_request(self, responses):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
@@ -24,7 +46,7 @@ class TestSushi5:
         )
         client = Sushi5Client(url, "foo")
         buffer = BytesIO()
-        report = client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
+        report = client.get_report_data("tr", "2019-02", "2019-02", output_content=buffer)
         records = list(report.fd_to_dicts(buffer)[1])
         assert len(records) == 3
 
@@ -114,160 +136,159 @@ class TestSushi5:
         assert isinstance(report.errors[0], TransportError)
         assert report.http_status_code == 500
 
-    @pytest.mark.now
     @pytest.mark.parametrize(
         "fail_short,fail_long,long_date_format_first,in_start_date,in_end_date,params",
         (
-            (True, False, True, "2020-01-01", "2020-01-01", [("2020-01-01", "2020-01-31")]),
+            (True, False, True, "2019-02-01", "2019-02-01", [("2019-02-01", "2019-02-28")]),
             (
                 False,
                 True,
                 True,
-                "2020-01-01",
-                "2020-01-01",
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+                "2019-02-01",
+                "2019-02-01",
+                [("2019-02-01", "2019-02-28"), ("2019-02", "2019-02")],
             ),
-            (True, False, True, "2020-02-01", "2020-02-29", [("2020-02-01", "2020-02-29")]),
+            (True, False, True, "2019-02-01", "2019-02-28", [("2019-02-01", "2019-02-28")]),
             (
                 False,
                 True,
                 True,
-                "2020-02-01",
-                "2020-02-29",
-                [("2020-02-01", "2020-02-29"), ("2020-02", "2020-02")],
+                "2019-02-01",
+                "2019-02-28",
+                [("2019-02-01", "2019-02-28"), ("2019-02", "2019-02")],
             ),
-            (True, False, True, "2020-01", "2020-01", [("2020-01-01", "2020-01-31")]),
+            (True, False, True, "2019-02", "2019-02", [("2019-02-01", "2019-02-28")]),
             (
                 False,
                 True,
                 True,
-                "2020-01",
-                "2020-01",
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+                "2019-02",
+                "2019-02",
+                [("2019-02-01", "2019-02-28"), ("2019-02", "2019-02")],
             ),
-            (True, False, True, date(2020, 1, 1), date(2020, 1, 1), [("2020-01-01", "2020-01-31")]),
+            (True, False, True, date(2019, 2, 1), date(2019, 2, 1), [("2019-02-01", "2019-02-28")]),
             (
                 False,
                 True,
                 True,
-                date(2020, 1, 1),
-                date(2020, 1, 1),
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
-            ),
-            (
-                True,
-                False,
-                True,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01-01", "2020-01-31")],
-            ),
-            (
-                False,
-                True,
-                True,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+                date(2019, 2, 1),
+                date(2019, 2, 1),
+                [("2019-02-01", "2019-02-28"), ("2019-02", "2019-02")],
             ),
             (
                 True,
                 False,
+                True,
+                datetime(2019, 2, 1),
+                datetime(2019, 2, 1),
+                [("2019-02-01", "2019-02-28")],
+            ),
+            (
                 False,
-                "2020-01-01",
-                "2020-01-01",
+                True,
+                True,
+                datetime(2019, 2, 1),
+                datetime(2019, 2, 1),
+                [("2019-02-01", "2019-02-28"), ("2019-02", "2019-02")],
+            ),
+            (
+                True,
+                False,
+                False,
+                "2019-02-01",
+                "2019-02-01",
                 [
-                    ("2020-01", "2020-01"),
-                    ("2020-01-01", "2020-01-31"),
+                    ("2019-02", "2019-02"),
+                    ("2019-02-01", "2019-02-28"),
                 ],
             ),
             (
                 False,
                 True,
                 False,
-                "2020-01-01",
-                "2020-01-01",
-                [("2020-01", "2020-01")],
+                "2019-02-01",
+                "2019-02-01",
+                [("2019-02", "2019-02")],
             ),
             (
                 True,
                 False,
                 False,
-                "2020-02-01",
-                "2020-02-29",
-                [("2020-02", "2020-02"), ("2020-02-01", "2020-02-29")],
+                "2019-02-01",
+                "2019-02-28",
+                [("2019-02", "2019-02"), ("2019-02-01", "2019-02-28")],
             ),
             (
                 False,
                 True,
                 False,
-                "2020-02-01",
-                "2020-02-29",
-                [("2020-02", "2020-02")],
+                "2019-02-01",
+                "2019-02-28",
+                [("2019-02", "2019-02")],
             ),
             (
                 True,
                 False,
                 False,
-                "2020-01",
-                "2020-01",
-                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
+                "2019-02",
+                "2019-02",
+                [("2019-02", "2019-02"), ("2019-02-01", "2019-02-28")],
             ),
             (
                 False,
                 True,
                 False,
-                "2020-01",
-                "2020-01",
-                [("2020-01", "2020-01")],
+                "2019-02",
+                "2019-02",
+                [("2019-02", "2019-02")],
             ),
             (
                 True,
                 False,
                 False,
-                date(2020, 1, 1),
-                date(2020, 1, 1),
-                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
+                date(2019, 2, 1),
+                date(2019, 2, 1),
+                [("2019-02", "2019-02"), ("2019-02-01", "2019-02-28")],
             ),
             (
                 False,
                 True,
                 False,
-                date(2020, 1, 1),
-                date(2020, 1, 1),
-                [("2020-01", "2020-01")],
+                date(2019, 2, 1),
+                date(2019, 2, 1),
+                [("2019-02", "2019-02")],
             ),
             (
                 True,
                 False,
                 False,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
+                datetime(2019, 2, 1),
+                datetime(2019, 2, 1),
+                [("2019-02", "2019-02"), ("2019-02-01", "2019-02-28")],
             ),
             (
                 False,
                 True,
                 False,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01", "2020-01")],
+                datetime(2019, 2, 1),
+                datetime(2019, 2, 1),
+                [("2019-02", "2019-02")],
             ),
             (
                 True,
                 True,
                 False,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
+                datetime(2019, 2, 1),
+                datetime(2019, 2, 1),
+                [("2019-02", "2019-02"), ("2019-02-01", "2019-02-28")],
             ),
             (
                 True,
                 True,
                 True,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
+                datetime(2019, 2, 1),
+                datetime(2019, 2, 1),
+                [("2019-02-01", "2019-02-28"), ("2019-02", "2019-02")],
             ),
         ),
     )

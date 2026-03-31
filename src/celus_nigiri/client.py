@@ -379,8 +379,16 @@ class Sushi5Client(SushiClientBase):
                 # in the body
                 if output_content:
                     output_content.seek(0)
+                begin_date = (
+                    begin_date.strftime("%Y-%m") if isinstance(begin_date, date) else begin_date
+                )
+                end_date = end_date.strftime("%Y-%m") if isinstance(end_date, date) else end_date
                 report = report_class(
-                    output_content, http_status_code=response.status_code, url=response.url
+                    output_content,
+                    http_status_code=response.status_code,
+                    url=response.url,
+                    start_date=begin_date,
+                    end_date=end_date,
                 )
                 if any(
                     str(getattr(e, "code", None))
