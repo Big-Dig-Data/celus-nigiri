@@ -3,6 +3,7 @@ Module dealing with data in the COUNTER51 format.
 """
 
 import json
+import logging
 import typing
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
@@ -16,6 +17,8 @@ from .counter5 import ALLOWED_ITEM_IDS, CounterError, TransportError
 from .error_codes import ErrorCode
 from .exceptions import SushiException
 from .utils import get_date_range, parse_date_fuzzy
+
+logger = logging.getLogger(__name__)
 
 
 class Counter51ReportBase(metaclass=ABCMeta):
@@ -38,6 +41,7 @@ class Counter51ReportBase(metaclass=ABCMeta):
         url: typing.Optional[str] = None,
         start_date: typing.Optional[str] = None,
         end_date: typing.Optional[str] = None,
+        strict: bool = False,
     ):
         self.url = url
         self.records = []
@@ -50,10 +54,35 @@ class Counter51ReportBase(metaclass=ABCMeta):
         self.http_status_code = http_status_code
         self.start_date = start_date and start_date[:7]
         self.end_date = end_date and end_date[:7]
+        self.start_date_obj = self.start_date and datetime.strptime(
+            self.start_date, "%Y-%m"
+        ).date().replace(day=1)
+        self.end_date_obj = self.end_date and datetime.strptime(
+            self.end_date, "%Y-%m"
+        ).date().replace(day=1)
+        self.strict = strict
 
         # Parse it for the first time to extract errors, warnings and infos
         if report:
             self.fd_to_dicts(report)
+
+    def _check_date(self, record_date: date) -> None | date:
+        if (self.start_date_obj and (record_date < self.start_date_obj)) or (
+            self.end_date_obj and (record_date > self.end_date_obj)
+        ):
+            if self.strict:
+                raise SushiException(
+                    "Date in data is not within downloaded range",
+                    content=record_date,
+                )
+            else:
+                logger.warning(
+                    "Date in data is not within downloaded range (%s)",
+                    record_date,
+                )
+                return None
+
+        return record_date
 
     def read_report(
         self, header: dict, report_items: typing.Generator[dict, None, None]
@@ -72,15 +101,15 @@ class Counter51ReportBase(metaclass=ABCMeta):
                 for metric, data in performances.items():
                     for month, value in data.items():
                         start = datetime.strptime(month, "%Y-%m").date().replace(day=1)
-
-                        yield CounterRecord(
-                            value=int(value),
-                            metric=metric,
-                            start=start,
-                            title=title,
-                            title_ids=title_ids,
-                            dimension_data=dimension_data,
-                        )
+                        if start := self._check_date(start):
+                            yield CounterRecord(
+                                value=int(value),
+                                metric=metric,
+                                start=start,
+                                title=title,
+                                title_ids=title_ids,
+                                dimension_data=dimension_data,
+                            )
 
     def check_header(self, header, fd):
         lower_keys = [e.lower() for e in header]
@@ -406,19 +435,19 @@ class Counter51IRReport(Counter51ReportBase):
                     for metric, data in performances.items():
                         for month, value in data.items():
                             start = datetime.strptime(month, "%Y-%m").date().replace(day=1)
-
-                            yield CounterRecord(
-                                value=int(value),
-                                metric=metric,
-                                start=start,
-                                title=title,
-                                title_ids=title_ids,
-                                item=item_name,
-                                item_ids=item_ids,
-                                item_publication_date=item_publication_date,
-                                item_authors=item_authors,
-                                dimension_data=dimension_data,
-                            )
+                            if start := self._check_date(start):
+                                yield CounterRecord(
+                                    value=int(value),
+                                    metric=metric,
+                                    start=start,
+                                    title=title,
+                                    title_ids=title_ids,
+                                    item=item_name,
+                                    item_ids=item_ids,
+                                    item_publication_date=item_publication_date,
+                                    item_authors=item_authors,
+                                    dimension_data=dimension_data,
+                                )
 
     def _item_get_item(self, data: dict):
         return data.get("Item", data)
@@ -473,16 +502,16 @@ class Counter51IRM1Report(Counter51IRReport):
                     for metric, data in performances.items():
                         for month, value in data.items():
                             start = datetime.strptime(month, "%Y-%m").date().replace(day=1)
-
-                            yield CounterRecord(
-                                value=int(value),
-                                metric=metric,
-                                start=start,
-                                title=title,
-                                title_ids=title_ids,
-                                item=item_name,
-                                item_ids=item_ids,
-                                item_publication_date=item_publication_date,
-                                item_authors=item_authors,
-                                dimension_data=dimension_data,
-                            )
+                            if start := self._check_date(start):
+                                yield CounterRecord(
+                                    value=int(value),
+                                    metric=metric,
+                                    start=start,
+                                    title=title,
+                                    title_ids=title_ids,
+                                    item=item_name,
+                                    item_ids=item_ids,
+                                    item_publication_date=item_publication_date,
+                                    item_authors=item_authors,
+                                    dimension_data=dimension_data,
+                                )

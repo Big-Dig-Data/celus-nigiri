@@ -10,6 +10,7 @@ from celus_nigiri.counter51 import (
     Counter51PRReport,
     Counter51TRReport,
 )
+from celus_nigiri.exceptions import SushiException
 from celus_nigiri.record import Author
 
 
@@ -276,3 +277,37 @@ class TestCounter51Json:
         }
         # Explicitly verify Parent_Data_Type is NOT present
         assert "Parent_Data_Type" not in records[-1].dimension_data
+
+
+class TestCounter51DateFiltering:
+    def test_no_date_filter_reads_all(self):
+        """Without date filters all records are returned."""
+        reader = Counter51DRReport()
+        path = Path(__file__).parent / "data/counter51/DR_sample_r51_wrong_months_all.json"
+        records = list(reader.file_to_records(path))
+        assert len(records) == 1824
+
+    def test_all_months_out_of_range_skipped(self):
+        """All records whose months fall outside the requested range are skipped."""
+        reader = Counter51DRReport(start_date="2022-01-01", end_date="2022-12-31")
+        path = Path(__file__).parent / "data/counter51/DR_sample_r51_wrong_months_all.json"
+        records = list(reader.file_to_records(path))
+        assert len(records) == 0
+
+    def test_some_months_out_of_range_skipped(self):
+        """Only records within the requested range are returned."""
+        reader = Counter51DRReport(start_date="2022-01-01", end_date="2022-12-31")
+        path = Path(__file__).parent / "data/counter51/DR_sample_r51_wrong_months_some.json"
+        records = list(reader.file_to_records(path))
+        assert len(records) == 12
+
+    def test_strict_mode_raises_on_out_of_range(self):
+        """In strict mode an out-of-range month raises SushiException.
+
+        The file has a mix of in-range (2022) and out-of-range (2021) records so
+        that the pre-filter passes through items for read_report to inspect.
+        """
+        reader = Counter51DRReport(start_date="2022-01-01", end_date="2022-12-31", strict=True)
+        path = Path(__file__).parent / "data/counter51/DR_sample_r51_wrong_months_some.json"
+        with pytest.raises(SushiException):
+            list(reader.file_to_records(path))

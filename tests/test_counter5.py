@@ -671,3 +671,44 @@ class TestCounter5TableReports:
                 "6",
             ),
         ]
+
+
+class TestCounter5DateFiltering:
+    def test_no_date_filter_reads_all(self):
+        """Without date filters all records are returned."""
+        reader = Counter5DRReport()
+        path = Path(__file__).parent / "data/counter5/DR_wrong_date_all.json"
+        records = list(reader.file_to_records(path))
+        assert len(records) == 51
+
+    def test_all_dates_out_of_range_skipped(self):
+        """All records whose dates fall outside the requested range are skipped."""
+        reader = Counter5DRReport(start_date="2016-01-01", end_date="2016-03-31")
+        path = Path(__file__).parent / "data/counter5/DR_wrong_date_all.json"
+        records = list(reader.file_to_records(path))
+        assert len(records) == 0
+
+    def test_some_dates_out_of_range_skipped(self):
+        """Only records within the requested range are returned."""
+        reader = Counter5DRReport(start_date="2016-01-01", end_date="2016-03-31")
+        path = Path(__file__).parent / "data/counter5/DR_wrong_date_some.json"
+        records = list(reader.file_to_records(path))
+        assert len(records) == 6
+
+    def test_all_dates_in_range_none_skipped(self):
+        """No records are skipped when all dates are within the range."""
+        reader = Counter5DRReport(start_date="2016-01-01", end_date="2016-03-31")
+        path = Path(__file__).parent / "data/counter5/DR_wrong_date_none.json"
+        records = list(reader.file_to_records(path))
+        assert len(records) == 51
+
+    def test_strict_mode_raises_on_out_of_range(self):
+        """In strict mode an out-of-range date raises SushiException.
+
+        The file has a mix of in-range (2016) and out-of-range (2015) records so
+        that the pre-filter passes through items for read_report to inspect.
+        """
+        reader = Counter5DRReport(start_date="2016-01-01", end_date="2016-03-31", strict=True)
+        path = Path(__file__).parent / "data/counter5/DR_wrong_date_some.json"
+        with pytest.raises(SushiException):
+            list(reader.file_to_records(path))

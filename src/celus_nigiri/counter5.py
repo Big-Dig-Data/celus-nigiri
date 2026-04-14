@@ -4,9 +4,10 @@ Module dealing with data in the COUNTER5 format.
 
 import csv
 import json
+import logging
 import typing
 from copy import deepcopy
-from datetime import date
+from datetime import date, datetime
 
 import ijson.backends.yajl2_c as ijson
 
@@ -16,6 +17,8 @@ from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .record import Author, CounterRecord
 from .utils import get_date_range, parse_counter_month, parse_date_fuzzy
+
+logger = logging.getLogger(__name__)
 
 
 class CounterError:
@@ -113,6 +116,7 @@ class Counter5ReportBase:
         url: typing.Optional[str] = None,
         start_date: typing.Optional[str] = None,
         end_date: typing.Optional[str] = None,
+        strict: bool = False,
     ):
         self.url = url
         self.records = []
@@ -125,10 +129,38 @@ class Counter5ReportBase:
         self.http_status_code = http_status_code
         self.start_date = start_date and start_date[:7]
         self.end_date = end_date and end_date[:7]
+        self.start_date_obj = self.start_date and datetime.strptime(
+            self.start_date, "%Y-%m"
+        ).date().replace(day=1)
+        self.end_date_obj = self.end_date and datetime.strptime(
+            self.end_date, "%Y-%m"
+        ).date().replace(day=1)
+        self.strict = strict
 
         # Parse it for the first time to extract errors, warnings and infos
         if report:
             self.fd_to_dicts(report)
+
+    def _check_date(self, record_date: date) -> None | date:
+        if record_date is None:
+            return None
+        month = record_date.replace(day=1)
+        if (self.start_date_obj and (month < self.start_date_obj)) or (
+            self.end_date_obj and (month > self.end_date_obj)
+        ):
+            if self.strict:
+                raise SushiException(
+                    "Date in data is not within downloaded range",
+                    content=record_date,
+                )
+            else:
+                logger.warning(
+                    "Date in data is not within downloaded range (%s)",
+                    record_date,
+                )
+                return None
+
+        return record_date
 
     def read_report(
         self, header: dict, items: typing.Generator[dict, None, None]
@@ -150,8 +182,11 @@ class Counter5ReportBase:
             performances = item.get("Performance", [])
             for performance in performances:
                 period = performance.get("Period", {})
-                start = parse_date_fuzzy(period.get("Begin_Date"))
-                end = parse_date_fuzzy(period.get("End_Date"))
+                start = self._check_date(parse_date_fuzzy(period.get("Begin_Date")))
+                end = self._check_date(parse_date_fuzzy(period.get("End_Date")))
+
+                if start is None or end is None:
+                    continue
 
                 for metric in performance.get("Instance", []):
                     yield CounterRecord(

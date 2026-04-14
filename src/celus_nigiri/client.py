@@ -125,6 +125,7 @@ class SushiClientBase:
         end_date,
         output_content: typing.Optional[typing.IO] = None,
         params=None,
+        strict: bool = False,
     ):
         raise NotImplementedError()
 
@@ -338,6 +339,7 @@ class Sushi5Client(SushiClientBase):
         :param end_date:
         :param dump_file: where to put file output
         :param params:
+        :param long_date_format: long date format should be used in requests
         :return:
         """
         url = self.make_download_url(report_type)
@@ -359,6 +361,7 @@ class Sushi5Client(SushiClientBase):
         end_date,
         output_content: typing.Optional[typing.IO] = None,
         params=None,
+        strict: bool = False,
     ) -> ReportClass:
         if os.environ.get("NIGIRI_LONG_DATE_FORMAT_FIRST", "0") == "1":
             long_date_format_tries = (True, False)
@@ -389,6 +392,7 @@ class Sushi5Client(SushiClientBase):
                     url=response.url,
                     start_date=begin_date,
                     end_date=end_date,
+                    strict=strict,
                 )
                 if any(
                     str(getattr(e, "code", None))
@@ -417,13 +421,20 @@ class Sushi5Client(SushiClientBase):
         end_date,
         output_content: typing.Optional[typing.IO] = None,
         params=None,
+        strict: bool = False,
     ) -> Counter5ReportBase:
         report_class = CounterVersion.C5.get_report_class(report_type)
         params = params or {}
         params.update(report_class.extra_params)
 
         return self._get_report_data(
-            report_class, report_type, begin_date, end_date, output_content, params
+            report_class,
+            report_type,
+            begin_date,
+            end_date,
+            output_content,
+            params,
+            strict=strict,
         )
 
     @classmethod
@@ -573,13 +584,14 @@ class Sushi51Client(Sushi5Client):
         end_date,
         output_content: typing.Optional[typing.IO] = None,
         params=None,
+        strict: bool = False,
     ) -> Counter51ReportBase:
         report_class = CounterVersion.C51.get_report_class(report_type)
         params = params or {}
         params.update(report_class.extra_params)
 
         return self._get_report_data(
-            report_class, report_type, begin_date, end_date, output_content, params
+            report_class, report_type, begin_date, end_date, output_content, params, strict=strict
         )
 
 
@@ -614,6 +626,7 @@ class Sushi4Client(SushiClientBase):
         end_date,
         output_content: typing.Optional[typing.IO] = None,
         params=None,
+        strict: bool = False,
     ) -> report.CounterReport:
         kwargs = {"customer_reference": self.customer_id}
         if self.requestor_id:
