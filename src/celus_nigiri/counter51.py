@@ -283,17 +283,20 @@ class Counter51ReportBase(metaclass=ABCMeta):
 
         return header, items
 
+    @classmethod
+    def get_filter_dates(cls, header: dict) -> tuple[None | str, None | str]:
+        report_filters = header.get("Report_Filters", {})
+        if not isinstance(report_filters, dict):
+            return None, None
+        return report_filters.get("Begin_Date"), report_filters.get("End_Date")
+
     def get_months(self, fd: typing.IO[bytes]) -> typing.List[date]:
         pos = fd.tell()
 
         header, _ = self.fd_to_dicts(fd)
 
         # Try to obtain End_Date and Begin_Date from report filter
-        date_start_str = None
-        date_end_str = None
-        if report_filters := header.get("Report_Filters", {}):
-            date_start_str = report_filters.get("Begin_Date")
-            date_end_str = report_filters.get("End_Date")
+        date_start_str, date_end_str = self.get_filter_dates(header)
 
         fd.seek(pos)
 

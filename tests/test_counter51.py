@@ -311,3 +311,33 @@ class TestCounter51DateFiltering:
         path = Path(__file__).parent / "data/counter51/DR_sample_r51_wrong_months_some.json"
         with pytest.raises(SushiException):
             list(reader.file_to_records(path))
+
+
+class TestCounter51GetFilterDates:
+    def test_both_dates_present(self):
+        header = {"Report_Filters": {"Begin_Date": "2022-01-01", "End_Date": "2022-12-31"}}
+        assert Counter51DRReport.get_filter_dates(header) == ("2022-01-01", "2022-12-31")
+
+    def test_only_begin_date(self):
+        header = {"Report_Filters": {"Begin_Date": "2022-01-01"}}
+        assert Counter51DRReport.get_filter_dates(header) == ("2022-01-01", None)
+
+    def test_only_end_date(self):
+        header = {"Report_Filters": {"End_Date": "2022-12-31"}}
+        assert Counter51DRReport.get_filter_dates(header) == (None, "2022-12-31")
+
+    def test_empty_filters_dict(self):
+        header = {"Report_Filters": {}}
+        assert Counter51DRReport.get_filter_dates(header) == (None, None)
+
+    def test_missing_report_filters(self):
+        assert Counter51DRReport.get_filter_dates({}) == (None, None)
+
+    def test_non_dict_filters(self):
+        header = {
+            "Report_Filters": [
+                {"Name": "Begin_Date", "Value": "2022-01-01"},
+                {"Name": "End_Date", "Value": "2022-12-31"},
+            ]
+        }
+        assert Counter51DRReport.get_filter_dates(header) == (None, None)

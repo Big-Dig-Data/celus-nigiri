@@ -394,7 +394,17 @@ class Sushi5Client(SushiClientBase):
                     end_date=end_date,
                     strict=strict,
                 )
-                if any(
+
+                # When long date format is not used check whether
+                # End_Date is properly set - some providers set
+                # it to first day of the month so it matches Start_Date
+                # in that case empty data are sometimes returned
+                skip = False
+                if not long_date_format:
+                    filter_start_date, filter_end_date = report.get_filter_dates(report.header)
+                    if filter_end_date and filter_start_date == filter_end_date:
+                        skip = True
+                if skip or any(
                     str(getattr(e, "code", None))
                     in [
                         str(ErrorCode.INVALID_DATE_ARGS.value),

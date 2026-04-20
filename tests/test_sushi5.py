@@ -376,3 +376,47 @@ class TestSushi5:
         assert len(called_urls) == 1
         assert "/reports?" in called_urls[0]
         assert "/reports/" not in called_urls[0]
+
+    def test_short_format_bad_filter_dates_retries_with_long_format(self, responses, monkeypatch):
+        """When short date format returns Report_Filters where Begin_Date==End_Date
+        (provider sets end to first of month), the client retries with long date format."""
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        bad_content = open(self.data_dir / "counter5_tr_bad_filter_dates.json", "r").read()
+        good_content = open(self.data_dir / "counter5_tr_test1.json", "r").read()
+        date_params = []
+
+        def callback(request):
+            params = (request.params["begin_date"], request.params["end_date"])
+            date_params.append(params)
+            if len(request.params["begin_date"]) == 7:
+                return (200, {}, bad_content)
+            return (200, {}, good_content)
+
+        responses.add_callback(responses.GET, url_re, callback=callback)
+        client = Sushi5Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data("tr", "2019-02", "2019-02", output_content=buffer)
+        assert report is not None
+        assert date_params == [("2019-02", "2019-02"), ("2019-02-01", "2019-02-28")]
+
+    def test_long_format_bad_filter_dates_does_not_retry(self, responses, monkeypatch):
+        """When long date format is tried first (NIGIRI_LONG_DATE_FORMAT_FIRST=1),
+        a response with Begin_Date==End_Date in filters does NOT trigger a retry
+        because the skip check only applies to short format requests."""
+        monkeypatch.setenv("NIGIRI_LONG_DATE_FORMAT_FIRST", "1")
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        bad_content = open(self.data_dir / "counter5_tr_bad_filter_dates.json", "r").read()
+        date_params = []
+
+        def callback(request):
+            date_params.append((request.params["begin_date"], request.params["end_date"]))
+            return (200, {}, bad_content)
+
+        responses.add_callback(responses.GET, url_re, callback=callback)
+        client = Sushi5Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data("tr", "2019-02", "2019-02", output_content=buffer)
+        assert report is not None
+        assert date_params == [("2019-02-01", "2019-02-28")]

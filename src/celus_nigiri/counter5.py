@@ -358,19 +358,27 @@ class Counter5ReportBase:
 
         return header, items
 
+    @classmethod
+    def get_filter_dates(cls, header: dict) -> tuple[None | str, None | str]:
+        filters = header.get("Report_Filters", [])
+        if not isinstance(filters, list):
+            raise RuntimeError("C5")
+            return None, None
+        start_date_str, end_date_str = None, None
+        for filter_item in filters:
+            if filter_item.get("Name") == "Begin_Date":
+                start_date_str = filter_item.get("Value")
+            elif filter_item.get("Name") == "End_Date":
+                end_date_str = filter_item.get("Value")
+        return start_date_str, end_date_str
+
     def get_months(self, fd: typing.IO[bytes]) -> typing.List[date]:
         pos = fd.tell()
 
         header, _ = self.fd_to_dicts(fd)
 
         # Try to obtain End_Date and Begin_Date from report filter
-        date_start_str = None
-        date_end_str = None
-        for e in header.get("Report_Filters", []):
-            if e.get("Name") == "Begin_Date":
-                date_start_str = e.get("Value")
-            elif e.get("Name") == "End_Date":
-                date_end_str = e.get("Value")
+        date_start_str, date_end_str = self.get_filter_dates(header)
 
         fd.seek(pos)
 
