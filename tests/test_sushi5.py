@@ -8,20 +8,24 @@ import pytest
 
 from celus_nigiri.client import Sushi5Client
 from celus_nigiri.counter5 import CounterError, TransportError
+from celus_nigiri.exceptions import SushiException
 
 
 class TestSushi5:
     data_dir = Path(__file__).parent / "data/counter5/"
 
     @pytest.mark.parametrize(
-        "report_type,filename,record_found",
+        "report_type,filename,record_found,exception,strict",
         (
-            ("dr", "DR_wrong_date_none.json", True),
-            ("dr", "DR_wrong_date_all.json", False),
-            ("dr", "DR_wrong_date_some.json", True),
+            ("dr", "DR_wrong_date_none.json", True, False, True),
+            ("dr", "DR_wrong_date_none.json", True, False, False),
+            ("dr", "DR_wrong_date_all.json", None, True, True),
+            ("dr", "DR_wrong_date_all.json", False, False, False),
+            ("dr", "DR_wrong_date_some.json", None, True, True),
+            ("dr", "DR_wrong_date_some.json", True, False, False),
         ),
     )
-    def test_wrong_date(self, filename, report_type, record_found, responses):
+    def test_wrong_date(self, filename, report_type, record_found, exception, strict, responses):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
         content = (self.data_dir / filename).open().read()
@@ -32,8 +36,16 @@ class TestSushi5:
         )
         client = Sushi5Client(url, "foo")
         buffer = BytesIO()
-        report = client.get_report_data(report_type, "2016-01", "2016-03", output_content=buffer)
-        assert report.record_found == record_found
+        if exception:
+            with pytest.raises(SushiException):
+                client.get_report_data(
+                    report_type, "2016-01", "2016-03", output_content=buffer, strict=strict
+                )
+        else:
+            report = client.get_report_data(
+                report_type, "2016-01", "2016-03", output_content=buffer, strict=strict
+            )
+            assert report.record_found == record_found
 
     def test_successful_request(self, responses):
         url = "http://foo.bar.baz/"

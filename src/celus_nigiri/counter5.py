@@ -246,21 +246,30 @@ class Counter5ReportBase:
             empty: typing.List[dict] = []
             return (e for e in empty)
 
-        def dict_contains_valid_date(raw_gen: typing.Generator[dict, None, None]) -> bool:
+        def dict_contains_valid_dates(raw_gen: typing.Generator[dict, None, None]) -> bool:
+            present = False
             for item in raw_gen:
                 for performace in item.get("Performance", []):
                     if period := performace.get("Period"):
                         if (begin_date := period.get("Begin_Date")) and (
                             end_date := period.get("End_Date")
                         ):
-                            begin_date = begin_date[:7]
-                            end_date = end_date[:7]
-                            if (not self.start_date or self.start_date <= begin_date) and (
-                                not self.end_date or end_date <= self.end_date
+                            if (begin_date_obj := parse_date_fuzzy(begin_date)) and (
+                                end_date_obj := parse_date_fuzzy(end_date)
                             ):
-                                return True
+                                if self._check_date(begin_date_obj) and self._check_date(
+                                    end_date_obj
+                                ):
+                                    if self.strict:
+                                        return True
+                                    present = True
+                            else:
+                                raise SushiException(
+                                    "Incorrect date range string",
+                                    content=f"({begin_date}, {end_date})",
+                                )
 
-            return False
+            return present
 
         # make sure that fd is at the beginning
         fd.seek(0)
@@ -293,12 +302,12 @@ class Counter5ReportBase:
             return {}, empty_generator()
 
         # Try to read the data
-        self.record_found = dict_contains_valid_date(ijson.items(fd, "Report_Items.item"))
+        self.record_found = dict_contains_valid_dates(ijson.items(fd, "Report_Items.item"))
         fd.seek(0)
         if self.record_found:
             items = ijson.items(fd, "Report_Items.item")
         else:
-            self.record_found = dict_contains_valid_date(ijson.items(fd, "body.Report_Items.item"))
+            self.record_found = dict_contains_valid_dates(ijson.items(fd, "body.Report_Items.item"))
             fd.seek(0)
             if self.record_found:
                 items = ijson.items(fd, "body.Report_Items.item")

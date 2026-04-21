@@ -164,28 +164,41 @@ class Counter51ReportBase(metaclass=ABCMeta):
             empty: typing.List[dict] = []
             return (e for e in empty)
 
-        def dict_contains_valid_date(raw_gen: typing.Generator[dict, None, None]) -> bool:
+        def dict_contains_valid_dates(raw_gen: typing.Generator[dict, None, None]) -> bool:
+            present = False
             for item in raw_gen:
                 for aperformance in item.get("Attribute_Performance", []):
                     if performance := aperformance.get("Performance"):
                         for values in performance.values():
                             for item_date in values.keys():
-                                if (not self.start_date or self.start_date <= item_date) and (
-                                    not self.end_date or item_date <= self.end_date
-                                ):
-                                    return True
+                                if item_date_obj := parse_date_fuzzy(item_date):
+                                    if self._check_date(item_date_obj.replace(day=1)):
+                                        if not self.strict:
+                                            return True
+                                        present = True
+                                else:
+                                    raise SushiException(
+                                        "Incorrect date string",
+                                        content=item_date,
+                                    )
                 # For IR
                 for iitem in item.get("Items", []):
                     for aperformance in iitem.get("Attribute_Performance", []):
                         if performance := aperformance.get("Performance"):
                             for values in performance.values():
                                 for item_date in values.keys():
-                                    if (not self.start_date or self.start_date <= item_date) and (
-                                        not self.end_date or item_date <= self.end_date
-                                    ):
-                                        return True
+                                    if item_date_obj := parse_date_fuzzy(item_date):
+                                        if self._check_date(item_date_obj.replace(day=1)):
+                                            if not self.strict:
+                                                return True
+                                            present = True
+                                    else:
+                                        raise SushiException(
+                                            "Incorrect date string",
+                                            content=item_date,
+                                        )
 
-            return False
+            return present
 
         # make sure that fd is at the beginning
         fd.seek(0)
@@ -218,12 +231,12 @@ class Counter51ReportBase(metaclass=ABCMeta):
             return {}, empty_generator()
 
         # Try to read the data
-        self.record_found = dict_contains_valid_date(ijson.items(fd, "Report_Items.item"))
+        self.record_found = dict_contains_valid_dates(ijson.items(fd, "Report_Items.item"))
         fd.seek(0)
         if self.record_found:
             items = ijson.items(fd, "Report_Items.item")
         else:
-            self.record_found = dict_contains_valid_date(ijson.items(fd, "body.Report_Items.item"))
+            self.record_found = dict_contains_valid_dates(ijson.items(fd, "body.Report_Items.item"))
             fd.seek(0)
             if self.record_found:
                 items = ijson.items(fd, "body.Report_Items.item")

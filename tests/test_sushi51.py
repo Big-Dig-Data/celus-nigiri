@@ -8,20 +8,24 @@ import pytest
 
 from celus_nigiri.client import Sushi51Client
 from celus_nigiri.counter5 import CounterError, TransportError
+from celus_nigiri.exceptions import SushiException
 
 
 class TestSushi51:
     data_dir = Path(__file__).parent / "data/counter51/"
 
     @pytest.mark.parametrize(
-        "report_type,filename,record_found",
+        "report_type,filename,record_found,exception,strict",
         (
-            ("dr", "DR_sample_r51.json", True),
-            ("dr", "DR_sample_r51_wrong_months_all.json", False),
-            ("dr", "DR_sample_r51_wrong_months_some.json", True),
+            ("dr", "DR_sample_r51.json", True, False, True),
+            ("dr", "DR_sample_r51.json", True, False, False),
+            ("dr", "DR_sample_r51_wrong_months_all.json", None, True, True),
+            ("dr", "DR_sample_r51_wrong_months_all.json", False, False, False),
+            ("dr", "DR_sample_r51_wrong_months_some.json", None, True, True),
+            ("dr", "DR_sample_r51_wrong_months_some.json", True, False, False),
         ),
     )
-    def test_wrong_date(self, filename, report_type, record_found, responses):
+    def test_wrong_date(self, filename, report_type, record_found, exception, strict, responses):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
         content = (self.data_dir / filename).open().read()
@@ -32,8 +36,17 @@ class TestSushi51:
         )
         client = Sushi51Client(url, "foo")
         buffer = BytesIO()
-        report = client.get_report_data(report_type, "2022-01", "2022-03", output_content=buffer)
-        assert report.record_found == record_found
+
+        if exception:
+            with pytest.raises(SushiException):
+                client.get_report_data(
+                    report_type, "2022-01", "2022-12", output_content=buffer, strict=strict
+                )
+        else:
+            report = client.get_report_data(
+                report_type, "2022-01", "2022-12", output_content=buffer, strict=strict
+            )
+            assert report.record_found == record_found
 
     @pytest.mark.parametrize(
         "rt,count",
