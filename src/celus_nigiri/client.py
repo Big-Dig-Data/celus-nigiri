@@ -2,7 +2,6 @@ import csv
 import enum
 import json
 import logging
-import os
 import traceback
 import typing
 import urllib
@@ -33,7 +32,7 @@ from .counter51 import (
     Counter51ReportBase,
     Counter51TRReport,
 )
-from .error_codes import ErrorCode, error_code_to_severity
+from .error_codes import error_code_to_severity
 from .exceptions import SushiException
 from .utils import begin_month, end_month, parse_date_fuzzy
 
@@ -126,6 +125,7 @@ class SushiClientBase:
         output_content: typing.Optional[typing.IO] = None,
         params=None,
         strict: bool = False,
+        long_date_format: bool = False,
     ):
         raise NotImplementedError()
 
@@ -267,12 +267,6 @@ class Sushi5Client(SushiClientBase):
 
     @classmethod
     def _encode_date(cls, value: date, long_date_format: bool) -> str:
-        """
-        >>> Sushi5Client._encode_date('2018-02-30')
-        '2018-02'
-        >>> Sushi5Client._encode_date(datetime(2018, 7, 6, 12, 25, 30))
-        '2018-07'
-        """
         if long_date_format:
             # 2020-01-01
             return value.isoformat()[:10]
@@ -310,7 +304,7 @@ class Sushi5Client(SushiClientBase):
             return "/".join([self.url.rstrip("/"), "reports"])
 
     def make_download_params(
-        self, extra_params, begin_date, end_date, long_date_format: bool = True
+        self, extra_params, begin_date, end_date, long_date_format: bool = False
     ):
         """
         Prepare download params which are used to query sushi server
@@ -329,7 +323,7 @@ class Sushi5Client(SushiClientBase):
         end_date,
         dump_file: typing.Optional[typing.IO] = None,
         params: typing.Optional[dict] = None,
-        long_date_format: bool = True,
+        long_date_format: bool = False,
     ) -> Response:
         """
         Makes a request for the data, stores the resulting data into `dump_file` and returns
@@ -362,64 +356,47 @@ class Sushi5Client(SushiClientBase):
         output_content: typing.Optional[typing.IO] = None,
         params=None,
         strict: bool = False,
+        long_date_format: bool = False,
     ) -> ReportClass:
-        if os.environ.get("NIGIRI_LONG_DATE_FORMAT_FIRST", "0") == "1":
-            long_date_format_tries = (True, False)
-        else:
-            long_date_format_tries = (False, True)
-        for i, long_date_format in enumerate(long_date_format_tries):
-            response = self.fetch_report_data(
-                report_type,
-                begin_date,
-                end_date,
-                params=params,
-                dump_file=output_content,
-                long_date_format=long_date_format,
+        response = self.fetch_report_data(
+            report_type,
+            begin_date,
+            end_date,
+            params=params,
+            dump_file=output_content,
+            long_date_format=long_date_format,
+        )
+        if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
+            # status codes in the 4xx range may be OK and just provide additional signal
+            # about an issue - we need to parse the result in case there is more info
+            # in the body
+            if output_content:
+                output_content.seek(0)
+            begin_date = (
+                begin_date.strftime("%Y-%m") if isinstance(begin_date, date) else begin_date
             )
-            if 200 <= response.status_code < 300 or 400 <= response.status_code < 600:
-                # status codes in the 4xx range may be OK and just provide additional signal
-                # about an issue - we need to parse the result in case there is more info
-                # in the body
-                if output_content:
-                    output_content.seek(0)
-                begin_date = (
-                    begin_date.strftime("%Y-%m") if isinstance(begin_date, date) else begin_date
-                )
-                end_date = end_date.strftime("%Y-%m") if isinstance(end_date, date) else end_date
-                report = report_class(
-                    output_content,
-                    http_status_code=response.status_code,
-                    url=response.url,
-                    start_date=begin_date,
-                    end_date=end_date,
-                    strict=strict,
-                )
+            end_date = end_date.strftime("%Y-%m") if isinstance(end_date, date) else end_date
+            report = report_class(
+                output_content,
+                http_status_code=response.status_code,
+                url=response.url,
+                start_date=begin_date,
+                end_date=end_date,
+                strict=strict,
+            )
 
-                # When long date format is not used check whether
-                # End_Date is properly set - some providers set
-                # it to first day of the month so it matches Start_Date
-                # in that case empty data are sometimes returned
-                skip = False
-                if not long_date_format:
-                    filter_start_date, filter_end_date = report.get_filter_dates(report.header)
-                    if filter_end_date and filter_start_date == filter_end_date:
-                        skip = True
-                if skip or any(
-                    str(getattr(e, "code", None))
-                    in [
-                        str(ErrorCode.INVALID_DATE_ARGS.value),
-                        str(ErrorCode.SERVICE_NOT_AVAILABLE.value),
-                    ]
-                    for e in report.errors
-                ):
-                    if i < len(long_date_format_tries) - 1:
-                        # clear the output stream before fallback
-                        if output_content:
-                            output_content.seek(0)
-                            output_content.truncate(0)
-                        continue
+            # When long date format is not used check whether
+            # End_Date is properly set - some providers set
+            # it to first day of the month so it matches Start_Date
+            # in that case empty data are sometimes returned
+            if not long_date_format:
+                filter_start_date, filter_end_date = report.get_filter_dates(report.header)
+                if filter_end_date and filter_start_date == filter_end_date:
+                    raise SushiException(
+                        text="Dates passed to query don't match dates in response filters",
+                    )
 
-                return report
+            return report
 
         # for other response codes we raise an error - it should be only exotic ones
         response.raise_for_status()
@@ -432,6 +409,7 @@ class Sushi5Client(SushiClientBase):
         output_content: typing.Optional[typing.IO] = None,
         params=None,
         strict: bool = False,
+        long_date_format: bool = False,
     ) -> Counter5ReportBase:
         report_class = CounterVersion.C5.get_report_class(report_type)
         params = params or {}
@@ -445,6 +423,7 @@ class Sushi5Client(SushiClientBase):
             output_content,
             params,
             strict=strict,
+            long_date_format=long_date_format,
         )
 
     @classmethod
@@ -595,13 +574,21 @@ class Sushi51Client(Sushi5Client):
         output_content: typing.Optional[typing.IO] = None,
         params=None,
         strict: bool = False,
+        long_date_format: bool = False,
     ) -> Counter51ReportBase:
         report_class = CounterVersion.C51.get_report_class(report_type)
         params = params or {}
         params.update(report_class.extra_params)
 
         return self._get_report_data(
-            report_class, report_type, begin_date, end_date, output_content, params, strict=strict
+            report_class,
+            report_type,
+            begin_date,
+            end_date,
+            output_content,
+            params,
+            strict=strict,
+            long_date_format=long_date_format,
         )
 
 

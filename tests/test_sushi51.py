@@ -1,4 +1,3 @@
-import json
 import re
 from datetime import date, datetime
 from io import BytesIO
@@ -204,174 +203,36 @@ class TestSushi51:
         assert report.http_status_code == 500
 
     @pytest.mark.parametrize(
-        "fail_short,fail_long,long_date_format_first,in_start_date,in_end_date,params",
+        "long_date_format,in_start_date,in_end_date,expected_begin,expected_end",
         (
-            (True, False, True, "2020-01-01", "2020-01-01", [("2020-01-01", "2020-01-31")]),
-            (
-                False,
-                True,
-                True,
-                "2020-01-01",
-                "2020-01-01",
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
-            ),
-            (True, False, True, "2020-02-01", "2020-02-29", [("2020-02-01", "2020-02-29")]),
-            (
-                False,
-                True,
-                True,
-                "2020-02-01",
-                "2020-02-29",
-                [("2020-02-01", "2020-02-29"), ("2020-02", "2020-02")],
-            ),
-            (True, False, True, "2020-01", "2020-01", [("2020-01-01", "2020-01-31")]),
-            (
-                False,
-                True,
-                True,
-                "2020-01",
-                "2020-01",
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
-            ),
-            (True, False, True, date(2020, 1, 1), date(2020, 1, 1), [("2020-01-01", "2020-01-31")]),
-            (
-                False,
-                True,
-                True,
-                date(2020, 1, 1),
-                date(2020, 1, 1),
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
-            ),
-            (
-                True,
-                False,
-                True,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01-01", "2020-01-31")],
-            ),
-            (
-                False,
-                True,
-                True,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01-01", "2020-01-31"), ("2020-01", "2020-01")],
-            ),
-            (
-                True,
-                False,
-                False,
-                "2020-01-01",
-                "2020-01-01",
-                [
-                    ("2020-01", "2020-01"),
-                    ("2020-01-01", "2020-01-31"),
-                ],
-            ),
-            (
-                False,
-                True,
-                False,
-                "2020-01-01",
-                "2020-01-01",
-                [("2020-01", "2020-01")],
-            ),
-            (
-                True,
-                False,
-                False,
-                "2020-02-01",
-                "2020-02-29",
-                [("2020-02", "2020-02"), ("2020-02-01", "2020-02-29")],
-            ),
-            (
-                False,
-                True,
-                False,
-                "2020-02-01",
-                "2020-02-29",
-                [("2020-02", "2020-02")],
-            ),
-            (
-                True,
-                False,
-                False,
-                "2020-01",
-                "2020-01",
-                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
-            ),
-            (
-                False,
-                True,
-                False,
-                "2020-01",
-                "2020-01",
-                [("2020-01", "2020-01")],
-            ),
-            (
-                True,
-                False,
-                False,
-                date(2020, 1, 1),
-                date(2020, 1, 1),
-                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
-            ),
-            (
-                False,
-                True,
-                False,
-                date(2020, 1, 1),
-                date(2020, 1, 1),
-                [("2020-01", "2020-01")],
-            ),
-            (
-                True,
-                False,
-                False,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01", "2020-01"), ("2020-01-01", "2020-01-31")],
-            ),
-            (
-                False,
-                True,
-                False,
-                datetime(2020, 1, 1),
-                datetime(2020, 1, 1),
-                [("2020-01", "2020-01")],
-            ),
+            (False, "2020-01-01", "2020-01-01", "2020-01", "2020-01"),
+            (False, "2020-02-01", "2020-02-29", "2020-02", "2020-02"),
+            (False, "2020-01", "2020-01", "2020-01", "2020-01"),
+            (False, date(2020, 1, 1), date(2020, 1, 1), "2020-01", "2020-01"),
+            (False, datetime(2020, 1, 1), datetime(2020, 1, 1), "2020-01", "2020-01"),
+            (True, "2020-01-01", "2020-01-01", "2020-01-01", "2020-01-31"),
+            (True, "2020-02-01", "2020-02-29", "2020-02-01", "2020-02-29"),
+            (True, "2020-01", "2020-01", "2020-01-01", "2020-01-31"),
+            (True, date(2020, 1, 1), date(2020, 1, 1), "2020-01-01", "2020-01-31"),
+            (True, datetime(2020, 1, 1), datetime(2020, 1, 1), "2020-01-01", "2020-01-31"),
         ),
     )
     def test_data_formats(
         self,
-        fail_short,
-        fail_long,
-        long_date_format_first,
+        long_date_format,
         in_start_date,
         in_end_date,
-        params,
+        expected_begin,
+        expected_end,
         responses,
-        monkeypatch,
     ):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
         content = open(self.data_dir / "TR_sample_r51.json", "r").read()
         date_params = []
 
-        if long_date_format_first:
-            monkeypatch.setenv("NIGIRI_LONG_DATE_FORMAT_FIRST", "1")
-
         def callback(request):
             date_params.append((request.params["begin_date"], request.params["end_date"]))
-            if (
-                len(request.params["begin_date"]) == 7 or len(request.params["end_date"]) == 7
-            ) and fail_short:
-                return 200, {}, json.dumps({"Code": 3020, "Message": "Invalid Date Arguments"})
-            if (
-                len(request.params["begin_date"]) == 10 or len(request.params["end_date"]) == 10
-            ) and fail_long:
-                return 200, {}, json.dumps({"Code": 3020, "Message": "Invalid Date Arguments"})
             return (200, {}, content)
 
         responses.add_callback(
@@ -382,9 +243,15 @@ class TestSushi51:
 
         client = Sushi51Client(url, "foo")
         buffer = BytesIO()
-        response = client.get_report_data("tr", in_start_date, in_end_date, output_content=buffer)
-        assert params == date_params
-        assert response.url.endswith(f"&begin_date={params[-1][0]}&end_date={params[-1][1]}")
+        response = client.get_report_data(
+            "tr",
+            in_start_date,
+            in_end_date,
+            output_content=buffer,
+            long_date_format=long_date_format,
+        )
+        assert date_params == [(expected_begin, expected_end)]
+        assert response.url.endswith(f"&begin_date={expected_begin}&end_date={expected_end}")
 
     @pytest.mark.parametrize(
         "in_url,out_url",
@@ -472,34 +339,9 @@ class TestSushi51:
         assert "/r51/reports?" in called_urls[0]
         assert "/r51/reports/" not in called_urls[0]
 
-    def test_short_format_bad_filter_dates_retries_with_long_format(self, responses, monkeypatch):
+    def test_short_format_bad_filter_dates_raises_exception(self, responses):
         """When short date format returns Report_Filters where Begin_Date==End_Date
-        (provider sets end to first of month), the client retries with long date format."""
-        url = "http://foo.bar.baz/"
-        url_re = re.compile(url.replace(".", r"\.") + ".*")
-        bad_content = open(self.data_dir / "DR_sample_r51_bad_filter_dates.json", "r").read()
-        good_content = open(self.data_dir / "DR_sample_r51.json", "r").read()
-        date_params = []
-
-        def callback(request):
-            params = (request.params["begin_date"], request.params["end_date"])
-            date_params.append(params)
-            if len(request.params["begin_date"]) == 7:
-                return (200, {}, bad_content)
-            return (200, {}, good_content)
-
-        responses.add_callback(responses.GET, url_re, callback=callback)
-        client = Sushi51Client(url, "foo")
-        buffer = BytesIO()
-        report = client.get_report_data("dr", "2022-01", "2022-01", output_content=buffer)
-        assert report is not None
-        assert date_params == [("2022-01", "2022-01"), ("2022-01-01", "2022-01-31")]
-
-    def test_long_format_bad_filter_dates_does_not_retry(self, responses, monkeypatch):
-        """When long date format is tried first (NIGIRI_LONG_DATE_FORMAT_FIRST=1),
-        a response with Begin_Date==End_Date in filters does NOT trigger a retry
-        because the skip check only applies to short format requests."""
-        monkeypatch.setenv("NIGIRI_LONG_DATE_FORMAT_FIRST", "1")
+        (provider sets end to first of month), a SushiException is raised."""
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
         bad_content = open(self.data_dir / "DR_sample_r51_bad_filter_dates.json", "r").read()
@@ -512,6 +354,52 @@ class TestSushi51:
         responses.add_callback(responses.GET, url_re, callback=callback)
         client = Sushi51Client(url, "foo")
         buffer = BytesIO()
-        report = client.get_report_data("dr", "2022-01", "2022-01", output_content=buffer)
+        with pytest.raises(SushiException):
+            client.get_report_data("dr", "2022-01", "2022-01", output_content=buffer)
+        assert date_params == [("2022-01", "2022-01")]
+
+    def test_short_format_raises_on_equal_filter_dates(self, responses):
+        """SushiException is raised when the response Report_Filters have Begin_Date == End_Date
+        and short date format is used (the server set End_Date to the first of the month)."""
+        import json as _json
+
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = _json.dumps(
+            {
+                "Report_Header": {
+                    "Release": "5.1",
+                    "Report_ID": "DR",
+                    "Report_Filters": [
+                        {"Name": "Begin_Date", "Value": "2022-01-01"},
+                        {"Name": "End_Date", "Value": "2022-01-01"},
+                    ],
+                },
+                "Report_Items": [],
+            }
+        )
+        responses.get(url_re, body=content)
+        client = Sushi51Client(url, "foo")
+        with pytest.raises(SushiException):
+            client.get_report_data("dr", "2022-01", "2022-01", output_content=BytesIO())
+
+    def test_long_format_bad_filter_dates_ignored(self, responses):
+        """When long date format is used, a response with Begin_Date==End_Date in filters
+        does not raise an exception - the check only applies to short format requests."""
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        bad_content = open(self.data_dir / "DR_sample_r51_bad_filter_dates.json", "r").read()
+        date_params = []
+
+        def callback(request):
+            date_params.append((request.params["begin_date"], request.params["end_date"]))
+            return (200, {}, bad_content)
+
+        responses.add_callback(responses.GET, url_re, callback=callback)
+        client = Sushi51Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data(
+            "dr", "2022-01", "2022-01", output_content=buffer, long_date_format=True
+        )
         assert report is not None
         assert date_params == [("2022-01-01", "2022-01-31")]
