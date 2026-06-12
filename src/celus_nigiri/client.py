@@ -13,7 +13,7 @@ import requests
 import xmltodict
 from celus_pycounter import report, sushi
 from decouple import Csv, config
-from requests import Response
+from requests import HTTPError, Response
 
 from .counter5 import (
     Counter5DRReport,
@@ -399,7 +399,10 @@ class Sushi5Client(SushiClientBase):
             return report
 
         # for other response codes we raise an error - it should be only exotic ones
-        response.raise_for_status()
+        raise HTTPError(
+            f"{response.status_code} Unexpected HTTP status for url: {response.url}",
+            response=response,
+        )
 
     def get_report_data(
         self,

@@ -4,6 +4,7 @@ from io import BytesIO
 from pathlib import Path
 
 import pytest
+from requests import HTTPError
 
 from celus_nigiri.client import Sushi51Client
 from celus_nigiri.counter5 import CounterError, TransportError
@@ -382,6 +383,21 @@ class TestSushi51:
         client = Sushi51Client(url, "foo")
         with pytest.raises(SushiException):
             client.get_report_data("dr", "2022-01", "2022-01", output_content=BytesIO())
+
+    def test_request_3xx_raises_http_error(self, responses):
+        """An exotic status code outside the 2xx/4xx-5xx ranges (e.g. an unfollowed
+        3xx) raises requests.HTTPError carrying the response and a clear message."""
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(url_re, body="Multiple Choices", status=300)
+        client = Sushi51Client(url, "foo")
+        buffer = BytesIO()
+        with pytest.raises(HTTPError) as exc_info:
+            client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
+        assert exc_info.value.response.status_code == 300
+        assert "300" in str(exc_info.value)
+        assert "Unexpected HTTP status" in str(exc_info.value)
 
     def test_long_format_bad_filter_dates_ignored(self, responses):
         """When long date format is used, a response with Begin_Date==End_Date in filters
