@@ -399,6 +399,39 @@ class TestSushi51:
         assert "300" in str(exc_info.value)
         assert "Unexpected HTTP status" in str(exc_info.value)
 
+    def test_request_301_with_location_is_followed(self, responses):
+        """A 301 carrying a Location header is transparently followed by the
+        underlying requests library, and the redirected report is parsed normally."""
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        content = open(self.data_dir / "TR_sample_r51.json", "r").read()
+
+        responses.get(url_re, status=301, headers={"Location": "http://foo.bar.baz/redirected"})
+        responses.get(url_re, body=content, status=200)
+
+        client = Sushi51Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data("tr", "2022-01", "2022-12", output_content=buffer)
+        records = list(report.fd_to_dicts(buffer)[1])
+        assert len(records) == 11
+        assert "redirected" in report.url
+        assert report.http_status_code == 200
+
+    def test_request_301_without_location_raises_http_error(self, responses):
+        """A 301 with no Location header cannot be followed by requests, so it
+        surfaces as an unfollowed 3xx and _get_report_data raises HTTPError."""
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(url_re, body="Moved Permanently", status=301)
+
+        client = Sushi51Client(url, "foo")
+        buffer = BytesIO()
+        with pytest.raises(HTTPError) as exc_info:
+            client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
+        assert exc_info.value.response.status_code == 301
+        assert "Unexpected HTTP status" in str(exc_info.value)
+
     def test_long_format_bad_filter_dates_ignored(self, responses):
         """When long date format is used, a response with Begin_Date==End_Date in filters
         does not raise an exception - the check only applies to short format requests."""
