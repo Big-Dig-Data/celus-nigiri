@@ -470,7 +470,7 @@ class Counter51IRReport(Counter51ReportBase):
 
     @classmethod
     def _item_get_item_ids(cls, item):
-        return cls._extract_title_ids(item.get("Item_ID", []) or [])
+        return cls._extract_title_ids(item.get("Item_ID", {}) or {})
 
     @classmethod
     def _item_get_publication_date(cls, item) -> typing.Optional[str]:
