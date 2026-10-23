@@ -13,10 +13,15 @@ import ijson.backends.yajl2_c as ijson
 
 from celus_nigiri.record import Author, CounterRecord
 
-from .counter5 import ALLOWED_ITEM_IDS, CounterError, TransportError
+from .counter5 import ALLOWED_ITEM_IDS, CloudflareBlockError, CounterError, TransportError
 from .error_codes import ErrorCode
 from .exceptions import SushiException
-from .utils import get_date_range, parse_date_fuzzy
+from .utils import (
+    CLOUDFLARE_DETECTION_SIZE,
+    get_date_range,
+    is_cloudflare_block,
+    parse_date_fuzzy,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -225,9 +230,15 @@ class Counter51ReportBase(metaclass=ABCMeta):
             return data, empty_generator()
 
         elif first_character != b"{":
-            self.errors.append(
-                TransportError(http_status=self.http_status_code, message="Non SUSHI data returned")
-            )
+            if is_cloudflare_block(fd.read(CLOUDFLARE_DETECTION_SIZE)):
+                self.errors.append(CloudflareBlockError(http_status=self.http_status_code))
+            else:
+                self.errors.append(
+                    TransportError(
+                        http_status=self.http_status_code, message="Non SUSHI data returned"
+                    )
+                )
+            fd.seek(0)
             return {}, empty_generator()
 
         # Try to read the data

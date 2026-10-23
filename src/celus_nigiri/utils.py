@@ -63,3 +63,26 @@ def begin_month(in_date: datetime.date) -> datetime.date:
 def end_month(in_date: datetime.date) -> datetime.date:
     last = calendar.monthrange(in_date.year, in_date.month)[1]
     return datetime.date(year=in_date.year, month=in_date.month, day=last)
+
+
+# Markers which only appear in pages served by Cloudflare itself (block pages
+# and browser challenges), not in pages which merely use Cloudflare CDN
+cloudflare_block_matcher = re.compile(
+    rb"cf-error-details"
+    rb"|cloudflare ray id"
+    rb"|attention required! \| cloudflare"
+    rb"|cf-browser-verification"
+    rb"|_cf_chl_opt"
+    rb"|challenges\.cloudflare\.com"
+    rb"|/cdn-cgi/challenge-platform/",
+    re.IGNORECASE,
+)
+CLOUDFLARE_DETECTION_SIZE = 64 * 1024
+
+
+def is_cloudflare_block(content: bytes) -> bool:
+    """
+    Returns True if `content` looks like a page returned by Cloudflare
+    when it blocks the request or requires a browser challenge
+    """
+    return bool(cloudflare_block_matcher.search(content[:CLOUDFLARE_DETECTION_SIZE]))

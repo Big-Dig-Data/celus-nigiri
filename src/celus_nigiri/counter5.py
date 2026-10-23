@@ -16,7 +16,13 @@ from .csv_detect import detect_csv_dialect, detect_file_encoding
 from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .record import Author, CounterRecord
-from .utils import get_date_range, parse_counter_month, parse_date_fuzzy
+from .utils import (
+    CLOUDFLARE_DETECTION_SIZE,
+    get_date_range,
+    is_cloudflare_block,
+    parse_counter_month,
+    parse_date_fuzzy,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +74,16 @@ class TransportError:
     def __str__(self):
         http = f" [HTTP {self.http_status}]" if self.http_status else ""
         return f"Transport error{http}: {self.message}"
+
+
+class CloudflareBlockError(TransportError):
+    """
+    The request was blocked by Cloudflare (a block page or a browser challenge was returned
+    instead of SUSHI data). It does not say anything about the validity of the credentials.
+    """
+
+    def __init__(self, http_status=None, message="Cloudflare blocking detected"):
+        super().__init__(http_status=http_status, message=message)
 
 
 ALLOWED_ITEM_IDS = {
@@ -296,9 +312,15 @@ class Counter5ReportBase:
             return data, empty_generator()
 
         elif first_character != b"{":
-            self.errors.append(
-                TransportError(http_status=self.http_status_code, message="Non SUSHI data returned")
-            )
+            if is_cloudflare_block(fd.read(CLOUDFLARE_DETECTION_SIZE)):
+                self.errors.append(CloudflareBlockError(http_status=self.http_status_code))
+            else:
+                self.errors.append(
+                    TransportError(
+                        http_status=self.http_status_code, message="Non SUSHI data returned"
+                    )
+                )
+            fd.seek(0)
             return {}, empty_generator()
 
         # Try to read the data
