@@ -7,8 +7,9 @@ import pytest
 from requests import HTTPError
 
 from celus_nigiri.client import Sushi51Client
-from celus_nigiri.counter5 import CloudflareBlockError, CounterError, TransportError
+from celus_nigiri.counter5 import AntibotBlockError, CounterError, TransportError
 from celus_nigiri.exceptions import SushiException
+from celus_nigiri.utils import AntibotProvider
 
 
 class TestSushi51:
@@ -204,7 +205,7 @@ class TestSushi51:
         assert report.http_status_code == 500
 
     @pytest.mark.parametrize("filename", ["blocked.html", "challenge.html"])
-    def test_request_403_cloudflare(self, filename, responses):
+    def test_request_403_antibot_cloudflare(self, filename, responses):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
         content = (Path(__file__).parent / "data/cloudflare" / filename).read_bytes()
@@ -220,7 +221,8 @@ class TestSushi51:
         report = client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
         assert len(report.errors) == 1
         error = report.errors[0]
-        assert isinstance(error, CloudflareBlockError)
+        assert isinstance(error, AntibotBlockError)
+        assert error.provider == AntibotProvider.CLOUDFLARE
         assert isinstance(error, TransportError)
         assert error.http_status == 403
         assert str(error) == "Transport error [HTTP 403]: Cloudflare blocking detected"
@@ -228,7 +230,7 @@ class TestSushi51:
         # the whole content is kept in the output
         assert buffer.getvalue() == content
 
-    def test_request_403_html_not_cloudflare(self, responses):
+    def test_request_403_html_not_antibot(self, responses):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
 
@@ -243,7 +245,7 @@ class TestSushi51:
         report = client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
         assert len(report.errors) == 1
         assert isinstance(report.errors[0], TransportError)
-        assert not isinstance(report.errors[0], CloudflareBlockError)
+        assert not isinstance(report.errors[0], AntibotBlockError)
 
     @pytest.mark.parametrize(
         "long_date_format,in_start_date,in_end_date,expected_begin,expected_end",

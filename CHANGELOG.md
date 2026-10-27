@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- detect Cloudflare block and challenge pages and report them as `CloudflareBlockError` (a subclass of `TransportError`)
+- detect pages of anti-bot systems (block pages and browser challenges) and report them as `AntibotBlockError` (a subclass of `TransportError`) with the detected `provider` (currently only Cloudflare is supported)
 
 ## [5.4.2] - 2026-08-04
 ### Fixed

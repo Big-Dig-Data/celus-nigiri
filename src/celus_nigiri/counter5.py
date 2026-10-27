@@ -17,9 +17,10 @@ from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .record import Author, CounterRecord
 from .utils import (
-    CLOUDFLARE_DETECTION_SIZE,
+    ANTIBOT_DETECTION_SIZE,
+    AntibotProvider,
+    detect_antibot,
     get_date_range,
-    is_cloudflare_block,
     parse_counter_month,
     parse_date_fuzzy,
 )
@@ -76,14 +77,18 @@ class TransportError:
         return f"Transport error{http}: {self.message}"
 
 
-class CloudflareBlockError(TransportError):
+class AntibotBlockError(TransportError):
     """
-    The request was blocked by Cloudflare (a block page or a browser challenge was returned
-    instead of SUSHI data). It does not say anything about the validity of the credentials.
+    The request was blocked by an anti-bot system (a block page or a browser challenge was
+    returned instead of SUSHI data). It does not say anything about the validity of the
+    credentials. `provider` tells which anti-bot system was detected.
     """
 
-    def __init__(self, http_status=None, message="Cloudflare blocking detected"):
-        super().__init__(http_status=http_status, message=message)
+    def __init__(self, provider: AntibotProvider, http_status=None, message=None):
+        self.provider = provider
+        super().__init__(
+            http_status=http_status, message=message or f"{provider.label} blocking detected"
+        )
 
 
 ALLOWED_ITEM_IDS = {
@@ -312,8 +317,10 @@ class Counter5ReportBase:
             return data, empty_generator()
 
         elif first_character != b"{":
-            if is_cloudflare_block(fd.read(CLOUDFLARE_DETECTION_SIZE)):
-                self.errors.append(CloudflareBlockError(http_status=self.http_status_code))
+            if provider := detect_antibot(fd.read(ANTIBOT_DETECTION_SIZE)):
+                self.errors.append(
+                    AntibotBlockError(provider=provider, http_status=self.http_status_code)
+                )
             else:
                 self.errors.append(
                     TransportError(

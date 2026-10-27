@@ -1,7 +1,8 @@
 import calendar
 import datetime
 import re
-from typing import List, Optional
+from enum import StrEnum
+from typing import Dict, List, Optional
 
 import dateutil
 
@@ -65,24 +66,39 @@ def end_month(in_date: datetime.date) -> datetime.date:
     return datetime.date(year=in_date.year, month=in_date.month, day=last)
 
 
-# Markers which only appear in pages served by Cloudflare itself (block pages
-# and browser challenges), not in pages which merely use Cloudflare CDN
-cloudflare_block_matcher = re.compile(
-    rb"cf-error-details"
-    rb"|cloudflare ray id"
-    rb"|attention required! \| cloudflare"
-    rb"|cf-browser-verification"
-    rb"|_cf_chl_opt"
-    rb"|challenges\.cloudflare\.com"
-    rb"|/cdn-cgi/challenge-platform/",
-    re.IGNORECASE,
-)
-CLOUDFLARE_DETECTION_SIZE = 64 * 1024
+class AntibotProvider(StrEnum):
+    CLOUDFLARE = "cloudflare"
+
+    @property
+    def label(self) -> str:
+        return {AntibotProvider.CLOUDFLARE: "Cloudflare"}[self]
 
 
-def is_cloudflare_block(content: bytes) -> bool:
+# Markers which only appear in pages served by the anti-bot system itself (block pages
+# and browser challenges), not in pages which merely use other services of the provider
+# (e.g. Cloudflare CDN)
+ANTIBOT_MATCHERS: Dict[AntibotProvider, re.Pattern] = {
+    AntibotProvider.CLOUDFLARE: re.compile(
+        rb"cf-error-details"
+        rb"|cloudflare ray id"
+        rb"|attention required! \| cloudflare"
+        rb"|cf-browser-verification"
+        rb"|_cf_chl_opt"
+        rb"|challenges\.cloudflare\.com"
+        rb"|/cdn-cgi/challenge-platform/",
+        re.IGNORECASE,
+    ),
+}
+ANTIBOT_DETECTION_SIZE = 64 * 1024
+
+
+def detect_antibot(content: bytes) -> Optional[AntibotProvider]:
     """
-    Returns True if `content` looks like a page returned by Cloudflare
-    when it blocks the request or requires a browser challenge
+    Returns the anti-bot provider if `content` looks like a page returned by an anti-bot
+    system when it blocks the request or requires a browser challenge, None otherwise
     """
-    return bool(cloudflare_block_matcher.search(content[:CLOUDFLARE_DETECTION_SIZE]))
+    content = content[:ANTIBOT_DETECTION_SIZE]
+    for provider, matcher in ANTIBOT_MATCHERS.items():
+        if matcher.search(content):
+            return provider
+    return None

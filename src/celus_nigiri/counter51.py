@@ -13,13 +13,13 @@ import ijson.backends.yajl2_c as ijson
 
 from celus_nigiri.record import Author, CounterRecord
 
-from .counter5 import ALLOWED_ITEM_IDS, CloudflareBlockError, CounterError, TransportError
+from .counter5 import ALLOWED_ITEM_IDS, AntibotBlockError, CounterError, TransportError
 from .error_codes import ErrorCode
 from .exceptions import SushiException
 from .utils import (
-    CLOUDFLARE_DETECTION_SIZE,
+    ANTIBOT_DETECTION_SIZE,
+    detect_antibot,
     get_date_range,
-    is_cloudflare_block,
     parse_date_fuzzy,
 )
 
@@ -230,8 +230,10 @@ class Counter51ReportBase(metaclass=ABCMeta):
             return data, empty_generator()
 
         elif first_character != b"{":
-            if is_cloudflare_block(fd.read(CLOUDFLARE_DETECTION_SIZE)):
-                self.errors.append(CloudflareBlockError(http_status=self.http_status_code))
+            if provider := detect_antibot(fd.read(ANTIBOT_DETECTION_SIZE)):
+                self.errors.append(
+                    AntibotBlockError(provider=provider, http_status=self.http_status_code)
+                )
             else:
                 self.errors.append(
                     TransportError(
