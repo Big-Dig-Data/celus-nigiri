@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - detect pages of anti-bot systems (block pages and browser challenges) and report them as `AntibotBlockError` (a subclass of `TransportError`) with the detected `provider` (currently only Cloudflare is supported)
 
+## [5.4.3] - 2026-10-27
+### Added
+- github CI workflow
+### Changed
+- dependencies updated
+
 ## [5.4.2] - 2026-08-04
 ### Fixed
 - parsing of IR and IRM1 for C51 when Item_ID field is missing

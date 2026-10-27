@@ -1,6 +1,6 @@
 [project]
 name = "celus-nigiri"
-version = "5.4.2"
+version = "5.4.3"
 description = "Library for downloading and parsing counter-like data."
 authors = [
 	{ name = "Beda Kosata", email = "beda@bigdigdata.com" },
@@ -13,22 +13,22 @@ classifiers = [
 	"Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-	"chardet>=5.0.0,<6",
-	"ijson~=3.4.0",
-	"celus-pycounter~=5.0.0",
+	"chardet>=7.7.0,<8",
+	"ijson~=3.6.0",
+	"celus-pycounter~=5.0.2",
 	"python-decouple~=3.6",
-	"python-dateutil~=2.9",
-	"xmltodict~=0.13.0",
+	"python-dateutil~=3.0",
+	"xmltodict~=1.0.4",
 ]
 
 [dependency-groups]
 dev = [
-	"pre-commit~=4.3.0",
-	"pytest~=8.4.1",
-	"pytest-cov~=6.2.1",
-	"pytest-responses~=0.5.1",
-	"responses~=0.25.3",
-	"ruff~=0.12.9",
+	"pre-commit~=4.7.0",
+	"pytest~=9.1.1",
+	"pytest-cov~=7.1.0",
+	"pytest-responses~=0.6.0",
+	"responses~=0.26.3",
+	"ruff~=0.17.2",
 ]
 
 [project.scripts]

@@ -4,7 +4,7 @@ import logging
 import typing
 from collections import Counter
 
-from chardet.universaldetector import UniversalDetector
+from chardet import UniversalDetector
 
 DEFAULT_ENCODING = "utf-8-sig"
 

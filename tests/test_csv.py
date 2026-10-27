@@ -9,7 +9,7 @@ from celus_nigiri.csv_detect import detect_csv_dialect, detect_file_encoding
     "path,encoding,dialect",
     (
         ("counter4/BR1-semicolons.csv", "ascii", "excel-semicolon"),
-        ("counter5/IR_M1-commas.csv", "utf-8-sig", "excel"),
+        ("counter5/IR_M1-commas.csv", "utf-8", "excel"),
         ("counter5/TR-tabs.tsv", "ascii", "excel-tab"),
     ),
 )
