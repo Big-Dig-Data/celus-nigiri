@@ -2,7 +2,12 @@ from datetime import date
 
 import pytest
 
-from celus_nigiri.utils import get_date_range, parse_counter_month
+from celus_nigiri.utils import (
+    AntibotProvider,
+    detect_antibot,
+    get_date_range,
+    parse_counter_month,
+)
 
 
 @pytest.mark.parametrize(
@@ -37,3 +42,25 @@ def test_parse_counter_month(text, output):
 )
 def test_get_date_range(begin, end, months):
     assert get_date_range(begin, end) == months
+
+
+CF = AntibotProvider.CLOUDFLARE
+
+
+@pytest.mark.parametrize(
+    ["content", "provider"],
+    [
+        (b"<title>Attention Required! | Cloudflare</title>", CF),
+        (b'<div id="cf-error-details">', CF),
+        (b"<span>Cloudflare Ray ID: <strong>8a1b2c3d4e5f6789</strong></span>", CF),
+        (b"<script>window._cf_chl_opt={cType: 'managed'};</script>", CF),
+        (b'<script src="/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1">', CF),
+        (b"", None),
+        (b"Internal Server Error", None),
+        (b"<html><body><h1>403 Forbidden</h1></body></html>", None),
+        # page which only uses Cloudflare CDN is not a block
+        (b'<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.min.js"></script>', None),
+    ],
+)
+def test_detect_antibot(content, provider):
+    assert detect_antibot(content) is provider

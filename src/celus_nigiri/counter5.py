@@ -16,7 +16,14 @@ from .csv_detect import detect_csv_dialect, detect_file_encoding
 from .error_codes import ErrorCode, error_code_to_severity
 from .exceptions import SushiException
 from .record import Author, CounterRecord
-from .utils import get_date_range, parse_counter_month, parse_date_fuzzy
+from .utils import (
+    ANTIBOT_DETECTION_SIZE,
+    AntibotProvider,
+    detect_antibot,
+    get_date_range,
+    parse_counter_month,
+    parse_date_fuzzy,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +75,20 @@ class TransportError:
     def __str__(self):
         http = f" [HTTP {self.http_status}]" if self.http_status else ""
         return f"Transport error{http}: {self.message}"
+
+
+class AntibotBlockError(TransportError):
+    """
+    The request was blocked by an anti-bot system (a block page or a browser challenge was
+    returned instead of SUSHI data). It does not say anything about the validity of the
+    credentials. `provider` tells which anti-bot system was detected.
+    """
+
+    def __init__(self, provider: AntibotProvider, http_status=None, message=None):
+        self.provider = provider
+        super().__init__(
+            http_status=http_status, message=message or f"{provider.label} blocking detected"
+        )
 
 
 ALLOWED_ITEM_IDS = {
@@ -296,9 +317,17 @@ class Counter5ReportBase:
             return data, empty_generator()
 
         elif first_character != b"{":
-            self.errors.append(
-                TransportError(http_status=self.http_status_code, message="Non SUSHI data returned")
-            )
+            if provider := detect_antibot(fd.read(ANTIBOT_DETECTION_SIZE)):
+                self.errors.append(
+                    AntibotBlockError(provider=provider, http_status=self.http_status_code)
+                )
+            else:
+                self.errors.append(
+                    TransportError(
+                        http_status=self.http_status_code, message="Non SUSHI data returned"
+                    )
+                )
+            fd.seek(0)
             return {}, empty_generator()
 
         # Try to read the data
