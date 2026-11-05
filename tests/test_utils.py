@@ -1,4 +1,5 @@
 from datetime import date
+from pathlib import Path
 
 import pytest
 from requests.structures import CaseInsensitiveDict
@@ -53,8 +54,10 @@ CF = AntibotProvider.CLOUDFLARE
     ["content", "provider"],
     [
         (b"<title>Attention Required! | Cloudflare</title>", CF),
-        (b'<div id="cf-error-details">', CF),
-        (b"<span>Cloudflare Ray ID: <strong>8a1b2c3d4e5f6789</strong></span>", CF),
+        (b"<h1>Sorry, you have been blocked</h1>", CF),
+        # shared with Cloudflare's ordinary error pages (e.g. 522), so not a block on their own
+        (b'<div id="cf-error-details">', None),
+        (b"<span>Cloudflare Ray ID: <strong>8a1b2c3d4e5f6789</strong></span>", None),
         (b"<script>window._cf_chl_opt={cType: 'managed'};</script>", CF),
         (b'<script src="/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1">', CF),
         (b"", None),
@@ -83,3 +86,12 @@ def test_detect_antibot(content, provider):
 )
 def test_detect_antibot_headers(headers, provider):
     assert detect_antibot_headers(headers) is provider
+
+
+@pytest.mark.parametrize(
+    ["filename", "provider"],
+    [("blocked.html", CF), ("challenge.html", CF), ("error_522.html", None)],
+)
+def test_detect_antibot_pages(filename, provider):
+    content = (Path(__file__).parent / "data/cloudflare" / filename).read_bytes()
+    assert detect_antibot(content) is provider

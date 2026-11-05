@@ -76,12 +76,13 @@ class AntibotProvider(StrEnum):
 
 # Markers which only appear in pages served by the anti-bot system itself (block pages
 # and browser challenges), not in pages which merely use other services of the provider
-# (e.g. Cloudflare CDN)
+# (e.g. Cloudflare CDN). Markers shared with the provider's ordinary error pages
+# (e.g. Cloudflare's "cf-error-details" or "Cloudflare Ray ID" on a 522 timeout) must not
+# be used - such a page means the server is down, not that the request was blocked.
 ANTIBOT_MATCHERS: Dict[AntibotProvider, re.Pattern] = {
     AntibotProvider.CLOUDFLARE: re.compile(
-        rb"cf-error-details"
-        rb"|cloudflare ray id"
-        rb"|attention required! \| cloudflare"
+        rb"attention required! \| cloudflare"
+        rb"|sorry, you have been blocked"
         rb"|cf-browser-verification"
         rb"|_cf_chl_opt"
         rb"|challenges\.cloudflare\.com"
