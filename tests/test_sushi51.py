@@ -230,7 +230,7 @@ class TestSushi51:
         # the whole content is kept in the output
         assert buffer.getvalue() == content
 
-    @pytest.mark.parametrize("status", [403, 503])
+    @pytest.mark.parametrize("status", [200, 403, 503])
     def test_request_cloudflare_challenge_header(self, status, responses):
         url = "http://foo.bar.baz/"
         url_re = re.compile(url.replace(".", r"\.") + ".*")
