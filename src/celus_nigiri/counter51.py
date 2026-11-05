@@ -18,6 +18,7 @@ from .error_codes import ErrorCode
 from .exceptions import SushiException
 from .utils import (
     ANTIBOT_DETECTION_SIZE,
+    AntibotProvider,
     detect_antibot,
     get_date_range,
     parse_date_fuzzy,
@@ -47,8 +48,11 @@ class Counter51ReportBase(metaclass=ABCMeta):
         start_date: typing.Optional[str] = None,
         end_date: typing.Optional[str] = None,
         strict: bool = False,
+        antibot_provider: typing.Optional[AntibotProvider] = None,
     ):
         self.url = url
+        # anti-bot system detected from response headers
+        self.antibot_provider = antibot_provider
         self.records = []
         self.queued = False
         self.record_found: bool = False  # is populated once `fd_to_dicts` is called
@@ -207,6 +211,13 @@ class Counter51ReportBase(metaclass=ABCMeta):
 
         # make sure that fd is at the beginning
         fd.seek(0)
+
+        if self.antibot_provider:
+            # response headers already show that this is not SUSHI data
+            self.errors.append(
+                AntibotBlockError(provider=self.antibot_provider, http_status=self.http_status_code)
+            )
+            return {}, empty_generator()
 
         # first check whether it is not an error report
         # skip potential leading whitespace

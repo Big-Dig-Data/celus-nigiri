@@ -133,6 +133,31 @@ class TestSushi5:
         assert report.errors[0].code == 3000
         assert report.http_status_code == 500
 
+    @pytest.mark.parametrize("status", [403, 503])
+    def test_request_cloudflare_challenge_header(self, status, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+        # body without any of the HTML markers - only the header tells it is a challenge
+        content = b"<html><head><title>Just a moment...</title></head><body></body></html>"
+
+        responses.get(
+            url_re,
+            body=content,
+            status=status,
+            content_type="text/html",
+            headers={"cf-mitigated": "challenge"},
+        )
+        client = Sushi5Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
+        assert len(report.errors) == 1
+        error = report.errors[0]
+        assert isinstance(error, AntibotBlockError)
+        assert error.provider == AntibotProvider.CLOUDFLARE
+        assert error.http_status == status
+        assert report.http_status_code == status
+        assert buffer.getvalue() == content
+
     @pytest.mark.parametrize("filename", ["blocked.html", "challenge.html"])
     def test_request_403_antibot_cloudflare(self, filename, responses):
         url = "http://foo.bar.baz/"

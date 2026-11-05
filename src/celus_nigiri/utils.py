@@ -2,7 +2,7 @@ import calendar
 import datetime
 import re
 from enum import StrEnum
-from typing import Dict, List, Optional
+from typing import Dict, List, Mapping, Optional, Tuple
 
 import dateutil
 
@@ -100,5 +100,25 @@ def detect_antibot(content: bytes) -> Optional[AntibotProvider]:
     content = content[:ANTIBOT_DETECTION_SIZE]
     for provider, matcher in ANTIBOT_MATCHERS.items():
         if matcher.search(content):
+            return provider
+    return None
+
+
+# Response headers (name, value) which an anti-bot system sets on its own responses.
+# Cloudflare sets `cf-mitigated: challenge` on all Challenge Page types, see
+# https://developers.cloudflare.com/cloudflare-challenges/challenge-types/challenge-pages/detect-response/
+ANTIBOT_HEADERS: Dict[AntibotProvider, Tuple[str, str]] = {
+    AntibotProvider.CLOUDFLARE: ("cf-mitigated", "challenge"),
+}
+
+
+def detect_antibot_headers(headers: Mapping[str, str]) -> Optional[AntibotProvider]:
+    """
+    Returns the anti-bot provider if the response `headers` show that the response was
+    produced by an anti-bot system (e.g. a browser challenge), None otherwise
+    """
+    normalized = {name.lower(): value.strip().lower() for name, value in headers.items()}
+    for provider, (name, value) in ANTIBOT_HEADERS.items():
+        if normalized.get(name) == value:
             return provider
     return None

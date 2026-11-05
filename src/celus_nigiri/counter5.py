@@ -138,8 +138,11 @@ class Counter5ReportBase:
         start_date: typing.Optional[str] = None,
         end_date: typing.Optional[str] = None,
         strict: bool = False,
+        antibot_provider: typing.Optional[AntibotProvider] = None,
     ):
         self.url = url
+        # anti-bot system detected from response headers
+        self.antibot_provider = antibot_provider
         self.records = []
         self.queued = False
         self.record_found: bool = False  # is populated once `fd_to_dicts` is called
@@ -294,6 +297,13 @@ class Counter5ReportBase:
 
         # make sure that fd is at the beginning
         fd.seek(0)
+
+        if self.antibot_provider:
+            # response headers already show that this is not SUSHI data
+            self.errors.append(
+                AntibotBlockError(provider=self.antibot_provider, http_status=self.http_status_code)
+            )
+            return {}, empty_generator()
 
         # first check whether it is not an error report
         # skip potential leading whitespace
