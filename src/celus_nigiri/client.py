@@ -34,7 +34,7 @@ from .counter51 import (
 )
 from .error_codes import error_code_to_severity
 from .exceptions import SushiException
-from .utils import begin_month, detect_antibot_headers, end_month, parse_date_fuzzy
+from .utils import begin_month, end_month, parse_date_fuzzy
 
 logger = logging.getLogger(__name__)
 
@@ -383,7 +383,7 @@ class Sushi5Client(SushiClientBase):
                 start_date=begin_date,
                 end_date=end_date,
                 strict=strict,
-                antibot_provider=detect_antibot_headers(response.headers),
+                http_headers=response.headers,
             )
 
             # When long date format is not used check whether

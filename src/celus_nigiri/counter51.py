@@ -18,8 +18,8 @@ from .error_codes import ErrorCode
 from .exceptions import SushiException
 from .utils import (
     ANTIBOT_DETECTION_SIZE,
-    AntibotProvider,
     detect_antibot,
+    detect_antibot_headers,
     get_date_range,
     parse_date_fuzzy,
 )
@@ -48,11 +48,10 @@ class Counter51ReportBase(metaclass=ABCMeta):
         start_date: typing.Optional[str] = None,
         end_date: typing.Optional[str] = None,
         strict: bool = False,
-        antibot_provider: typing.Optional[AntibotProvider] = None,
+        http_headers: typing.Optional[typing.Mapping[str, str]] = None,
     ):
         self.url = url
-        # anti-bot system detected from response headers
-        self.antibot_provider = antibot_provider
+        self.http_headers = http_headers or {}
         self.records = []
         self.queued = False
         self.record_found: bool = False  # is populated once `fd_to_dicts` is called
@@ -212,13 +211,6 @@ class Counter51ReportBase(metaclass=ABCMeta):
         # make sure that fd is at the beginning
         fd.seek(0)
 
-        if self.antibot_provider:
-            # response headers already show that this is not SUSHI data
-            self.errors.append(
-                AntibotBlockError(provider=self.antibot_provider, http_status=self.http_status_code)
-            )
-            return {}, empty_generator()
-
         # first check whether it is not an error report
         # skip potential leading whitespace
         first_character = fd.read(1)  # type: bytes
@@ -241,7 +233,9 @@ class Counter51ReportBase(metaclass=ABCMeta):
             return data, empty_generator()
 
         elif first_character != b"{":
-            if provider := detect_antibot(fd.read(ANTIBOT_DETECTION_SIZE)):
+            if provider := detect_antibot_headers(self.http_headers) or detect_antibot(
+                fd.read(ANTIBOT_DETECTION_SIZE)
+            ):
                 self.errors.append(
                     AntibotBlockError(provider=provider, http_status=self.http_status_code)
                 )
