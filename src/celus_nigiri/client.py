@@ -383,6 +383,7 @@ class Sushi5Client(SushiClientBase):
                 start_date=begin_date,
                 end_date=end_date,
                 strict=strict,
+                http_headers=response.headers,
             )
 
             # When long date format is not used check whether

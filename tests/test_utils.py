@@ -1,10 +1,12 @@
 from datetime import date
 
 import pytest
+from requests.structures import CaseInsensitiveDict
 
 from celus_nigiri.utils import (
     AntibotProvider,
     detect_antibot,
+    detect_antibot_headers,
     get_date_range,
     parse_counter_month,
 )
@@ -64,3 +66,20 @@ CF = AntibotProvider.CLOUDFLARE
 )
 def test_detect_antibot(content, provider):
     assert detect_antibot(content) is provider
+
+
+@pytest.mark.parametrize(
+    ["headers", "provider"],
+    [
+        ({"cf-mitigated": "challenge"}, CF),
+        ({"CF-Mitigated": "Challenge"}, CF),
+        ({"cf-mitigated": " challenge "}, CF),
+        (CaseInsensitiveDict({"Cf-Mitigated": "challenge"}), CF),
+        ({}, None),
+        ({"cf-mitigated": "something-else"}, None),
+        # Cloudflare CDN headers present on any response going through Cloudflare
+        ({"cf-ray": "8a1b2c3d4e5f6789-PRG", "server": "cloudflare"}, None),
+    ],
+)
+def test_detect_antibot_headers(headers, provider):
+    assert detect_antibot_headers(headers) is provider
