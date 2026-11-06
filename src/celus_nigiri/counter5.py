@@ -92,6 +92,38 @@ class AntibotBlockError(TransportError):
         )
 
 
+def initial_parse(report, fd: typing.IO[bytes]) -> None:
+    """
+    Parses `fd` for the first time to populate errors, warnings and infos of `report`.
+
+    For an HTTP error status (4xx, 5xx) the status itself signals the failure - e.g. COUNTER
+    5.1 removed Exceptions 3000 and 3010 and uses only HTTP 404 for unsupported reports.
+    So if the body is not a valid COUNTER response or does not contain any Exception,
+    a `TransportError` is recorded instead of raising an exception or pretending
+    that there is no usage.
+    """
+    if report.http_status_code is None or report.http_status_code < 400:
+        report.fd_to_dicts(fd)
+        return
+
+    try:
+        report.fd_to_dicts(fd)
+    except Exception as e:  # any parsing error - the body is not relevant
+        logger.debug("Failed to parse body of HTTP %s response: %s", report.http_status_code, e)
+        report.errors.append(
+            TransportError(http_status=report.http_status_code, message="Non SUSHI data returned")
+        )
+    else:
+        if not any((report.errors, report.warnings, report.infos, report.record_found)):
+            report.errors.append(
+                TransportError(
+                    http_status=report.http_status_code,
+                    message="HTTP error status without any Exception",
+                )
+            )
+    fd.seek(0)
+
+
 ALLOWED_ITEM_IDS = {
     "DR": {"Proprietary": "Proprietary", "Proprietary_ID": "Proprietary", "URI": "URI"},
     "TR": {
@@ -163,7 +195,7 @@ class Counter5ReportBase:
 
         # Parse it for the first time to extract errors, warnings and infos
         if report:
-            self.fd_to_dicts(report)
+            initial_parse(self, report)
 
     def _check_date(self, record_date: date) -> None | date:
         if record_date is None:

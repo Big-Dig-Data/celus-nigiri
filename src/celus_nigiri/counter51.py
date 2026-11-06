@@ -13,7 +13,13 @@ import ijson.backends.yajl2_c as ijson
 
 from celus_nigiri.record import Author, CounterRecord
 
-from .counter5 import ALLOWED_ITEM_IDS, AntibotBlockError, CounterError, TransportError
+from .counter5 import (
+    ALLOWED_ITEM_IDS,
+    AntibotBlockError,
+    CounterError,
+    TransportError,
+    initial_parse,
+)
 from .error_codes import ErrorCode
 from .exceptions import SushiException
 from .utils import (
@@ -72,7 +78,7 @@ class Counter51ReportBase(metaclass=ABCMeta):
 
         # Parse it for the first time to extract errors, warnings and infos
         if report:
-            self.fd_to_dicts(report)
+            initial_parse(self, report)
 
     def _check_date(self, record_date: date) -> None | date:
         if (self.start_date_obj and (record_date < self.start_date_obj)) or (

@@ -204,6 +204,68 @@ class TestSushi51:
         assert isinstance(report.errors[0], TransportError)
         assert report.http_status_code == 500
 
+    @pytest.mark.parametrize("status", [404, 500])
+    @pytest.mark.parametrize(
+        "body,message",
+        (
+            ("", "Non SUSHI data returned"),
+            ('{"detail": "Not found."}', "Non SUSHI data returned"),
+            ('{"detail": ', "Non SUSHI data returned"),
+            ("{}", "Non SUSHI data returned"),
+            ("[]", "HTTP error status without any Exception"),
+            ("[1, 2]", "HTTP error status without any Exception"),
+        ),
+    )
+    def test_request_error_status_without_exception(self, status, body, message, responses):
+        """
+        COUNTER 5.1 removed Exceptions 3000 and 3010, an unsupported report is signaled
+        only by HTTP 404 - the body should not matter
+        """
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(url_re, body=body, status=status)
+        client = Sushi51Client(url, "foo")
+        buffer = BytesIO()
+        report = client.get_report_data("tr", "2020-01", "2020-01", output_content=buffer)
+        assert len(report.errors) == 1
+        assert isinstance(report.errors[0], TransportError)
+        assert report.errors[0].http_status == status
+        assert report.errors[0].message == message
+        assert report.http_status_code == status
+        assert not report.record_found
+
+    def test_request_404_with_exception(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(
+            url_re, body='{"Code": 3020, "Message": "Invalid Date Arguments"}', status=404
+        )
+        client = Sushi51Client(url, "foo")
+        report = client.get_report_data("tr", "2020-01", "2020-01", output_content=BytesIO())
+        assert len(report.errors) == 1
+        assert isinstance(report.errors[0], CounterError)
+        assert report.errors[0].code == 3020
+
+    def test_request_200_empty_exception_list(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(url_re, body="[]", status=200)
+        client = Sushi51Client(url, "foo")
+        report = client.get_report_data("tr", "2020-01", "2020-01", output_content=BytesIO())
+        assert report.errors == []
+
+    def test_request_200_not_counter_json(self, responses):
+        url = "http://foo.bar.baz/"
+        url_re = re.compile(url.replace(".", r"\.") + ".*")
+
+        responses.get(url_re, body='{"detail": "Not found."}', status=200)
+        client = Sushi51Client(url, "foo")
+        with pytest.raises(SushiException):
+            client.get_report_data("tr", "2020-01", "2020-01", output_content=BytesIO())
+
     @pytest.mark.parametrize("filename", ["blocked.html", "challenge.html"])
     def test_request_403_antibot_cloudflare(self, filename, responses):
         url = "http://foo.bar.baz/"
