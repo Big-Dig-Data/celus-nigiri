@@ -13,7 +13,11 @@ classifiers = [
 	"Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-	"chardet>=7.7.0,<8",
+	# chardet 7.x is a rewrite with a different confidence scale: e.g. Shift-JIS/CP932
+	# files score ~0.2-0.34 (vs 0.99 in 5.x/6.x), so csv_detect.detect_file_encoding()'s
+	# min_confidence=0.8 rejects them and falls back to utf-8 -> UnicodeDecodeError.
+	# Don't bump to 7.x until encoding detection stops relying on the confidence value.
+	"chardet>=5.0.0,<7",
 	"ijson~=3.6.0",
 	"celus-pycounter~=5.0.2",
 	"python-decouple~=3.6",
